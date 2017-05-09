@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace MultiKeyMap
 {
-    internal class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where T : IEquatable<T> where K : IEnumerable<T>
+    internal class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
         private IDictionary<K, V> fullMap;
         private ILiteSetMultimap<T, K> partMap;
 
-        internal BaseMultiKeyMap(IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap, IEqualityComparer<T> comparer)
+        internal BaseMultiKeyMap(IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
         {
             this.fullMap = fullMap;
             this.partMap = partMap;

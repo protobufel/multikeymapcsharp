@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MultiKeyMap
 {
-    interface IMultiKeyMap<T, K, V> : IDictionary<K, V> where T : IEquatable<T> where K : IEnumerable<T>
+    public interface IMultiKeyMap<T, K, V> : IDictionary<K, V> where K : IEnumerable<T>
     {
 
         IEnumerable<V> GetValuesByPartialKey(IEnumerable<T> partialKey);
