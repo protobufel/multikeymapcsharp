@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap
 {
     internal class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
@@ -15,13 +14,14 @@ namespace MultiKeyMap
             this.fullMap = fullMap;
             this.partMap = partMap;
         }
-
+ 
         #region IMultiKeyMap specific methods
         public IEnumerable<V> GetValuesByPartialKey(IEnumerable<T> partialKey)
         {
-            ISet<K> fullKeys = GetFullKeysByPartialKey(partialKey);
 
-            if (fullKeys.Count == 0)
+            IEnumerable<K> fullKeys = GetFullKeysByPartialKey(partialKey);
+
+            if (Enumerable.Empty<K>() == fullKeys)
             {
                 return Enumerable.Empty<V>();
             }
@@ -30,8 +30,15 @@ namespace MultiKeyMap
 
             foreach (K fullKey in fullKeys)
             {
-                fullMap.TryGetValue(fullKey, out V value);
-                result.Add(value);
+                if (fullMap.TryGetValue(fullKey, out V value))
+                {
+                    result.Add(value);
+                }
+                else
+                {
+                    // shouldn't normally happen; only in case of parallel use or as a bug!
+                    throw new KeyNotFoundException($"fullMap doesn't have the fullKey '{fullKey}', but should!");
+                }
             }
 
             return result;
@@ -39,9 +46,9 @@ namespace MultiKeyMap
 
         public IEnumerable<KeyValuePair<K, V>> GetEntriesByPartialKey(IEnumerable<T> partialKey)
         {
-            ISet<K> fullKeys = GetFullKeysByPartialKey(partialKey);
+            IEnumerable<K> fullKeys = GetFullKeysByPartialKey(partialKey);
 
-            if (fullKeys.Count == 0)
+            if (Enumerable.Empty<K>() == fullKeys)
             {
                 return Enumerable.Empty<KeyValuePair<K, V>>();
             }
@@ -50,19 +57,26 @@ namespace MultiKeyMap
 
             foreach (K fullKey in fullKeys)
             {
-                fullMap.TryGetValue(fullKey, out V value);
-                KeyValuePair<K, V> entry = new KeyValuePair<K, V>(fullKey, value);
-                result.Add(entry);
+                if (fullMap.TryGetValue(fullKey, out V value))
+                {
+                    KeyValuePair<K, V> entry = new KeyValuePair<K, V>(fullKey, value);
+                    result.Add(entry);
+                }
+                else
+                {
+                    // shouldn't normally happen; only in case of parallel use or as a bug!
+                    throw new KeyNotFoundException($"fullMap doesn't have the fullKey '{fullKey}', but should!");
+                }
             }
 
             return result;
         }
 
-        public ISet<K> GetFullKeysByPartialKey(IEnumerable<T> partialKey)
+        public IEnumerable<K> GetFullKeysByPartialKey(IEnumerable<T> partialKey)
         {
             if (partMap.Count == 0)
             {
-                return new HashSet<K>();
+                return new HashSet<K>(); // or Enumerable.Empty<K>() of Linq if we returned IEnumerable<K> instead
             }
 
             IList<ISet<K>> subResults = new List<ISet<K>>();
@@ -73,7 +87,7 @@ namespace MultiKeyMap
             {
                 if (!partMap.TryGetValue(subKey, out ISet<K> subResult))
                 {
-                    return new HashSet<K>();
+                    return Enumerable.Empty<K>();
                 }
                 else if (subResult.Count < minSize)
                 {
@@ -86,10 +100,10 @@ namespace MultiKeyMap
 
             if (subResults.Count == 0)
             {
-                return new HashSet<K>();
+                return Enumerable.Empty<K>();
             }
 
-            ISet<K> result = new HashSet<K>(subResults[minPos]);
+            ISet<K> result = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
 
             if (subResults.Count == 1)
             {
@@ -104,7 +118,7 @@ namespace MultiKeyMap
 
                     if (result.Count == 0)
                     {
-                        return new HashSet<K>();
+                        return Enumerable.Empty<K>();
                     }
                 }
             }
@@ -131,7 +145,20 @@ namespace MultiKeyMap
         }
         #endregion
 
-        public V this[K key] { get => fullMap[key]; set => fullMap[key] = value; }
+        public V this[K key]
+        {
+            get => fullMap[key];
+            set
+            {
+                int count = fullMap.Count;
+                fullMap[key] = value;
+
+                if (fullMap.Count > count)
+                {
+                    AddPartial(key);
+                }
+             }
+        }
 
         public ICollection<K> Keys => fullMap.Keys;
 

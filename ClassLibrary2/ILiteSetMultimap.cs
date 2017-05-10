@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap
 {
     public interface ILiteSetMultimap<K, V>
     {
@@ -13,5 +13,7 @@ namespace MultiKeyMap
         bool TryGetValue(K key, out ISet<V> value);
 
         bool Add(K key, V value);
+
+        IEqualityComparer<V> ValueComparer { get; }
     }
 }

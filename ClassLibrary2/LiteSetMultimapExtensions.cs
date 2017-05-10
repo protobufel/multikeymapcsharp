@@ -1,21 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace MultiKeyMap.Extensions
+namespace GitHub.Protobufel.MultiKeyMap.Extensions
 {
     public static class LiteSetMultimapExtensions
     {
-        public static ILiteSetMultimap<K, V> ToSetMultiMap<K, V>(this IDictionary<K, ISet<V>> map)
+        public static ILiteSetMultimap<K, V> ToSetMultimap<K, V>(this IDictionary<K, ISet<V>> map, IEqualityComparer<V> valueComparer)
         {
-            return new LiteSetMultimap<K, V>(map);
+            return new LiteSetMultimap<K, V>(map, valueComparer);
+        }
+
+        public static ILiteSetMultimap<K, V> ToSetMultimap<K, V>(this IDictionary<K, ISet<V>> map)
+        {
+            return ToSetMultimap(map, EqualityComparer<V>.Default);
         }
 
         private class LiteSetMultimap<K, V> : ILiteSetMultimap<K, V>
         {
             private readonly IDictionary<K, ISet<V>> map;
+            private readonly IEqualityComparer<V> valueComparer;
 
-            public LiteSetMultimap(IDictionary<K, ISet<V>> map)
+            public LiteSetMultimap(IDictionary<K, ISet<V>> map, IEqualityComparer<V> valueComparer)
             {
                 this.map = map;
+                this.valueComparer = valueComparer;
             }
 
             public void Clear()
@@ -36,7 +45,7 @@ namespace MultiKeyMap.Extensions
                     return true;
                 }
 
-                col = new HashSet<V>() { value };
+                col = new HashSet<V>(valueComparer) { value };
                 map.Add(key, col);
                 return false;
             }
@@ -63,12 +72,14 @@ namespace MultiKeyMap.Extensions
                     return map.Count;
                 }
             }
+
+            public IEqualityComparer<V> ValueComparer => valueComparer;
         }
     }
 
     public static class EnumerableEqualityExtensionsons
     {
-       public static  IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : IEnumerable<T>
+        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : IEnumerable<T>
         {
             return new EnumerableEqualityComparer<T, K>(elementComparer);
         }
@@ -85,7 +96,7 @@ namespace MultiKeyMap.Extensions
 
         public EnumerableEqualityComparer(IEqualityComparer<T> elementComparer)
         {
-            this.elementComparer = elementComparer;      
+            this.elementComparer = elementComparer;
         }
 
         public EnumerableEqualityComparer() : this(EqualityComparer<T>.Default)
@@ -94,31 +105,23 @@ namespace MultiKeyMap.Extensions
 
         public override bool Equals(K col1, K col2)
         {
-            IEnumerator<T> it1 = col1.GetEnumerator();
-            IEnumerator<T> it2 = col2.GetEnumerator();
-            bool isNext1 = false;
-            bool isNext2 = false;
-
-            while ((isNext1 = it1.MoveNext()) & (isNext2 = it2.MoveNext()))
-            {
-                if (!elementComparer.Equals(it1.Current, it2.Current))
-                {
-                    return false;
-                }
-            }
-
-            return (isNext1 == isNext2);
-       }
+            return Enumerable.SequenceEqual(col1, col2, elementComparer);
+        }
 
         public override int GetHashCode(K col)
         {
+            if (col == null)
+            {
+                return 0;
+            }
+
             int hash = 5;
 
             unchecked
             {
                 foreach (var item in col)
                 {
-                    hash = 37 * hash + elementComparer.GetHashCode(item);
+                    hash = hash * 37 + elementComparer.GetHashCode(item);
                 }
             }
 
