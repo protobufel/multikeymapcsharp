@@ -1,8 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
     <RootNamespace>GitHub.Protobufel.MultiKeyMap</RootNamespace>
+    <Authors>David Tesler</Authors>
+    <Company></Company>
+    <Summary>C# implementation of the multi-key map</Summary>
+    <Description>C# implementation of the multi-key map - a Dictionary with added querying by any combination of sub-keys.</Description>
+    <Copyright>Copyright © 2017, David Tesler (https://github.com/protobufel)</Copyright>
+    <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/protobufel/multikeymapcsharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>c# library multikey dictionary</PackageTags>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard1.4\MultiKeyMap.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
