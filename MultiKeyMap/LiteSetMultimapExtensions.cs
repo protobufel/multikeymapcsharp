@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace GitHub.Protobufel.MultiKeyMap.Extensions
 {
-    public static class LiteSetMultimapExtensions
+    internal static class LiteSetMultimapExtensions
     {
         public static ILiteSetMultimap<K, V> ToSetMultimap<K, V>(this IDictionary<K, ISet<V>> map, IEqualityComparer<V> valueComparer)
         {
@@ -77,7 +76,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Extensions
         }
     }
 
-    public static class EnumerableEqualityExtensionsons
+    internal static class EnumerableEqualityExtensionsons
     {
         public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : IEnumerable<T>
         {

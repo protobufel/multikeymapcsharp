@@ -2,7 +2,7 @@
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    public interface ILiteSetMultimap<K, V>
+    internal interface ILiteSetMultimap<K, V>
     {
         void Clear();
 
