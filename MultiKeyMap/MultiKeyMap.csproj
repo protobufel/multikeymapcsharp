@@ -5,8 +5,8 @@
     <RootNamespace>GitHub.Protobufel.MultiKeyMap</RootNamespace>
     <Authors>David Tesler</Authors>
     <Company></Company>
-    <Summary>C# implementation of the multi-key map</Summary>
     <Description>C# implementation of the multi-key map - a Dictionary with added querying by any combination of sub-keys.</Description>
+    <Summary>C# implementation of the multi-key map</Summary>
     <Copyright>Copyright © 2017, David Tesler (https://github.com/protobufel)</Copyright>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/protobufel/multikeymapcsharp</PackageProjectUrl>
@@ -17,9 +17,9 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
