@@ -30,4 +30,8 @@
     <DocumentationFile>bin\Release\netstandard1.4\MultiKeyMap.xml</DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='AppVeyor1|net45|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='AppVeyor1|netstandard1.4|AnyCPU'" />
+
 </Project>
