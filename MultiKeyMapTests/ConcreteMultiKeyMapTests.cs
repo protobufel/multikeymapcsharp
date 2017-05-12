@@ -5,8 +5,6 @@ using GitHub.Protobufel.MultiKeyMap;
 using System.Collections;
 using System.Collections.Generic;
 using FluentAssertions;
-//using FluentAssertions.Types;
-//using FluentAssertions.Collections;
 
 namespace MultiKeyMapTests
 {
