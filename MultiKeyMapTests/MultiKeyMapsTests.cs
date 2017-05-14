@@ -9,7 +9,7 @@ using FluentAssertions;
 namespace MultiKeyMapTests
 {
     [TestClass]
-    public class MultiKeyMapsTests
+    public class MultiKeyMapsTest
     {
  
         [TestInitialize]
@@ -57,13 +57,16 @@ namespace MultiKeyMapTests
             multiDict.Add(k, v);
             multiDict.Should().NotBeEmpty().And.ContainKey(k).And.ContainValue(v).And.Contain(expectedEntry).And.HaveCount(1);
 
-            var actualKeys = multiDict.GetFullKeysByPartialKey(k);
+            bool result = multiDict.TryGetFullKeysByPartialKey(k, out var actualKeys);
+            result.Should().BeTrue();
             actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0,k);
 
-            var actualValues = multiDict.GetValuesByPartialKey(k);
+            result = multiDict.TryGetValuesByPartialKey(k, out var actualValues);
+            result.Should().BeTrue();
             actualValues.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
 
-            var actualEntries = multiDict.GetEntriesByPartialKey(k);
+            result = multiDict.TryGetEntriesByPartialKey(k, out var actualEntries);
+            result.Should().BeTrue();
             actualEntries.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
 
             return multiDict;

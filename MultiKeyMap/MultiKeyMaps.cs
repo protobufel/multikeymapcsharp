@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 using GitHub.Protobufel.MultiKeyMap.Extensions;
 
 namespace GitHub.Protobufel.MultiKeyMap

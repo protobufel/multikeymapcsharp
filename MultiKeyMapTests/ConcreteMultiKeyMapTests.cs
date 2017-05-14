@@ -147,6 +147,34 @@ namespace MultiKeyMapTests
             helper4.AssertGetEntriesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
         }
 
+        [TestMethod]
+        public void TryGetFullKeysByPartialKeyTest()
+        {
+            helper1.AssertTryGetFullKeysByPartialKey(new List<int>() { 3, 2 });
+            helper2.AssertTryGetFullKeysByPartialKey(new List<string>() { "6", "2" });
+            helper3.AssertTryGetFullKeysByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
+            helper4.AssertTryGetFullKeysByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+        }
+
+
+        [TestMethod]
+        public void TryGetValuesByPartialKeyTest()
+        {
+            helper1.AssertTryGetValuesByPartialKey(new List<int>() { 3, 2 });
+            helper2.AssertTryGetValuesByPartialKey(new List<string>() { "6", "2" });
+            helper3.AssertTryGetValuesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
+            helper4.AssertTryGetValuesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+        }
+
+        [TestMethod]
+        public void TryGetEntriesByPartialKeyTest()
+        {
+            helper1.AssertTryGetEntriesByPartialKey(new List<int>() { 3, 2 });
+            helper2.AssertTryGetEntriesByPartialKey(new List<string>() { "6", "2" });
+            helper3.AssertTryGetEntriesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
+            helper4.AssertTryGetEntriesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+        }
+
         private Class1<T> GetClass1<T>(T any)
         {
             return new Class1<T>(any);

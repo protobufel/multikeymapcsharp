@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace GitHub.Protobufel.MultiKeyMap.Extensions
+namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
 {
     internal static class LiteSetMultimapExtensions
     {

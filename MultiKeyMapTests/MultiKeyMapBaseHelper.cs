@@ -56,13 +56,16 @@ namespace MultiKeyMapTests
             multiDict.Add(k, v);
             multiDict.Should().NotBeEmpty().And.ContainKey(k).And.ContainValue(v).And.Contain(expectedEntry).And.HaveCount(1);
 
-            var actualKeys = multiDict.GetFullKeysByPartialKey(k);
+            bool result = multiDict.TryGetFullKeysByPartialKey(k, out var actualKeys);
+            result.Should().BeTrue();
             actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, k);
 
-            var actualValues = multiDict.GetValuesByPartialKey(k);
+            result = multiDict.TryGetValuesByPartialKey(k, out var actualValues);
+            result.Should().BeTrue();
             actualValues.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
 
-            var actualEntries = multiDict.GetEntriesByPartialKey(k);
+            result = multiDict.TryGetEntriesByPartialKey(k, out var actualEntries);
+            result.Should().BeTrue();
             actualEntries.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
         }
 
@@ -98,13 +101,16 @@ namespace MultiKeyMapTests
             multiDict[k] = v;
             multiDict.Should().NotBeEmpty().And.ContainKey(k).And.ContainValue(v).And.Contain(expectedEntry).And.HaveCount(1);
 
-            var actualKeys = multiDict.GetFullKeysByPartialKey(k);
+            bool result = multiDict.TryGetFullKeysByPartialKey(k, out var actualKeys);
+            result.Should().BeTrue();
             actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, k);
 
-            var actualValues = multiDict.GetValuesByPartialKey(k);
+            result = multiDict.TryGetValuesByPartialKey(k, out var actualValues);
+            result.Should().BeTrue();
             actualValues.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
 
-            var actualEntries = multiDict.GetEntriesByPartialKey(k);
+            result = multiDict.TryGetEntriesByPartialKey(k, out var actualEntries);
+            result.Should().BeTrue();
             actualEntries.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
         }
 
@@ -130,11 +136,11 @@ namespace MultiKeyMapTests
 
             multiDict.Add(k, v);
             bool removed = multiDict.Remove(k);
-            removed.ShouldBeEquivalentTo(true);
+            removed.Should().Be(true);
             multiDict.Should().HaveCount(0);
 
             removed = multiDict.Remove(k);
-            removed.ShouldBeEquivalentTo(false);
+            removed.Should().Be(false);
             multiDict.Should().HaveCount(0);
 
             object nullK = null;
@@ -222,6 +228,119 @@ namespace MultiKeyMapTests
 
 
             actualEntries.Should().NotBeNull().And.OnlyHaveUniqueItems().And.NotContainNulls().And.HaveCount(expectedCount);
+
+            if (k1HasPartialKey)
+            {
+                actualEntries.Should().Contain(expectedEntry1);
+            }
+
+            if (k2HasPartialKey)
+            {
+                actualEntries.Should().Contain(expectedEntry1);
+            }
+        }
+
+        public void AssertTryGetFullKeysByPartialKey(IEnumerable<T> partialKey)
+        {
+            //KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
+            //Assumptions:
+            k1.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k2.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k1.Should().NotEqual(k2, "ASSUMPTION!");
+
+            bool k1HasPartialKey = Enumerable.Intersect(k1, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            bool k2HasPartialKey = Enumerable.Intersect(k2, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            int expectedCount = (k1HasPartialKey ? 1 : 0) + (k2HasPartialKey ? 1 : 0);
+
+            multiDict.Add(k1, v1);
+            multiDict.Add(k2, v2);
+            bool result = multiDict.TryGetFullKeysByPartialKey(partialKey, out var actualKeys);
+            result.Should().Be(expectedCount > 0);
+
+            if (!result)
+            {
+                actualKeys.Should().Equal(default(ISet<K>));
+            }
+            else
+            {
+                actualKeys.Should().NotBeNull().And.OnlyHaveUniqueItems().And.NotContainNulls().And.HaveCount(expectedCount);
+            }
+
+            if (k1HasPartialKey)
+            {
+                actualKeys.Should().Contain(k1);
+            }
+
+            if (k2HasPartialKey)
+            {
+                actualKeys.Should().Contain(k2);
+            }
+        }
+
+        public void AssertTryGetValuesByPartialKey(IEnumerable<T> partialKey)
+        {
+            //KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
+            //Assumptions:
+            k1.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k2.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k1.Should().NotEqual(k2, "ASSUMPTION!");
+
+            bool k1HasPartialKey = Enumerable.Intersect(k1, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            bool k2HasPartialKey = Enumerable.Intersect(k2, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            int expectedCount = (k1HasPartialKey ? 1 : 0) + (k2HasPartialKey ? 1 : 0);
+
+            multiDict.Add(k1, v1);
+            multiDict.Add(k2, v2);
+            bool result = multiDict.TryGetValuesByPartialKey(partialKey, out var actualValues);
+            result.Should().Be(expectedCount > 0);
+
+            if (!result)
+            {
+                actualValues.Should().Equal(default(ICollection<V>));
+            }
+            else
+            {
+                actualValues.Should().NotBeNull().And.OnlyHaveUniqueItems().And.HaveCount(expectedCount);
+            }
+
+            if (k1HasPartialKey)
+            {
+                actualValues.Should().Contain(v1);
+            }
+
+            if (k2HasPartialKey)
+            {
+                actualValues.Should().Contain(v2);
+            }
+        }
+
+        public void AssertTryGetEntriesByPartialKey(IEnumerable<T> partialKey)
+        {
+            KeyValuePair<K, V> expectedEntry1 = new KeyValuePair<K, V>(k1, v1);
+            KeyValuePair<K, V> expectedEntry2 = new KeyValuePair<K, V>(k2, v2);
+
+            //Assumptions:
+            k1.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k2.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k1.Should().NotEqual(k2, "ASSUMPTION!");
+
+            bool k1HasPartialKey = Enumerable.Intersect(k1, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            bool k2HasPartialKey = Enumerable.Intersect(k2, partialKey).Count().Equals(Enumerable.Count(partialKey));
+            int expectedCount = (k1HasPartialKey ? 1 : 0) + (k2HasPartialKey ? 1 : 0);
+
+            multiDict.Add(k1, v1);
+            multiDict.Add(k2, v2);
+            bool result = multiDict.TryGetEntriesByPartialKey(partialKey, out var actualEntries);
+            result.Should().Be(expectedCount > 0);
+
+            if (!result)
+            {
+                actualEntries.Should().Equal(default(ICollection<V>));
+            }
+            else
+            {
+                actualEntries.Should().NotBeNull().And.OnlyHaveUniqueItems().And.NotContainNulls().And.HaveCount(expectedCount);
+            }
 
             if (k1HasPartialKey)
             {
