@@ -53,6 +53,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Extensions
 
             return me;
         }
+
         /// <summary>
         /// Copies (adds) all KeyValuePair(-s) from the other IMultiKeyMap into this object.
         /// NOTE: The keys and values are not cloned, but just simply added as-is.

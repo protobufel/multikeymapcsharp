@@ -131,7 +131,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         #region new TryGetsByPartialKey
         public bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values)
         {
-            if (!TryGetFullKeysByPartialKey(partialKey ?? throw new ArgumentNullException(), out ISet<K> fullKeys))
+            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
             {
                 values = default(ICollection<V>);
                 return false;
@@ -157,7 +157,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public bool TryGetEntriesByPartialKey(IEnumerable<T> partialKey, out ICollection<KeyValuePair<K, V>> entries)
         {
-            if (!TryGetFullKeysByPartialKey(partialKey ?? throw new ArgumentNullException(), out ISet<K> fullKeys))
+            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
             {
                 entries = default(ICollection<KeyValuePair<K, V>>);
                 return false;
@@ -184,7 +184,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, out ISet<K> fullKeys)
         {
-            partialKey = partialKey ?? throw new ArgumentNullException();
+            if (partialKey == null) throw new ArgumentNullException();
 
             if (partMap.Count == 0)
             {
@@ -237,6 +237,182 @@ namespace GitHub.Protobufel.MultiKeyMap
                         return false;
                     }
                 }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region positioned filtered queries
+
+        public bool TryGetValuesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<V> values)
+        {
+            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            {
+                values = default(ICollection<V>);
+                return false;
+            }
+
+            values = new List<V>();
+
+            foreach (K fullKey in fullKeys)
+            {
+                if (fullMap.TryGetValue(fullKey, out V value))
+                {
+                    values.Add(value);
+                }
+                else
+                {
+                    // shouldn't normally happen; only in case of parallel use or as a bug!
+                    throw new KeyNotFoundException($"fullMap doesn't have the fullKey '{fullKey}', but should!");
+                }
+            }
+
+            return true;
+        }
+
+        public bool TryGetEntriesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<KeyValuePair<K, V>> entries)
+        {
+            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            {
+                entries = default(ICollection<KeyValuePair<K, V>>);
+                return false;
+            }
+
+            entries = new List<KeyValuePair<K, V>>();
+
+            foreach (K fullKey in fullKeys)
+            {
+                if (fullMap.TryGetValue(fullKey, out V value))
+                {
+                    KeyValuePair<K, V> entry = new KeyValuePair<K, V>(fullKey, value);
+                    entries.Add(entry);
+                }
+                else
+                {
+                    // shouldn't normally happen; only in case of parallel use or as a bug!
+                    throw new KeyNotFoundException($"fullMap doesn't have the fullKey '{fullKey}', but should!");
+                }
+            }
+
+            return true;
+        }
+
+        public bool TryGetFullKeysByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ISet<K> fullKeys)
+        {
+            if (partialKey == null) throw new ArgumentNullException();
+
+            IList<ISet<K>> subResults = new List<ISet<K>>();
+            int minSize = int.MaxValue;
+            int minPos = -1;
+
+            foreach (var bag in partialKey)
+            {
+
+                if (!partMap.TryGetValue(bag.subkey, out ISet<K> subResult))
+                {
+                    fullKeys = default(ISet<K>);
+                    return false;
+                }
+
+                if (bag.position > 0)
+                {
+                    ISet<K> filteredSubResult = new HashSet<K>();
+
+                    foreach (K fullKey in subResult)
+                    {
+                        if (bag.subkey.Equals(fullKey.ElementAtOrDefault(bag.position)))
+                        {
+                            filteredSubResult.Add(fullKey);
+                        }
+                    }
+
+                    if (filteredSubResult.Count == 0)
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
+
+                    subResult = filteredSubResult;
+                }
+
+                if (subResult.Count < minSize)
+                {
+                    minSize = subResult.Count;
+                    minPos = subResults.Count;
+                }
+
+                subResults.Add(subResult);
+            }
+
+            if (subResults.Count == 0)
+            {
+                fullKeys = default(ISet<K>);
+                return false;
+            }
+
+            fullKeys = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
+
+            if (subResults.Count == 1)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < subResults.Count; i++)
+            {
+                if (i != minPos)
+                {
+                    fullKeys.IntersectWith(subResults[i]);
+
+                    if (fullKeys.Count == 0)
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+
+        #endregion
+        #region single sub-key TryGet queries
+
+        internal bool TryGetValuesByPartialKey(T partialKey, out ICollection<V> values)
+        {
+            if (TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            {
+                values = fullKeys.Select(key => fullMap.TryGetValue(key, out V value) ? value : default(V)).ToList();
+                return true;
+            }
+
+            values = default(ICollection<V>);
+            return false;
+        }
+
+        internal bool TryGetEntriesByPartialKey(T partialKey, out ICollection<KeyValuePair<K, V>> entries)
+        {
+            if (TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            {
+                entries = fullKeys.Select(key => fullMap.TryGetValue(key, out V value)
+                ? new KeyValuePair<K, V>(key, value) : default(KeyValuePair<K, V>)).ToList();
+                return true;
+            }
+
+            entries = default(ICollection<KeyValuePair<K, V>>);
+            return false;
+        }
+
+        internal bool TryGetFullKeysByPartialKey(T partialKey, out ISet<K> fullKeys)
+        {
+            if (partialKey == null) throw new ArgumentNullException();
+
+            if ((partMap.Count == 0) || !partMap.TryGetValue(partialKey, out fullKeys))
+            {
+                fullKeys = default(ISet<K>);
+                return false;
             }
 
             return true;

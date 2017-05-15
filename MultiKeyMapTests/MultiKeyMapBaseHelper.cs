@@ -352,5 +352,48 @@ namespace MultiKeyMapTests
                 actualEntries.Should().Contain(expectedEntry1);
             }
         }
+
+
+        //TODO REDO and complete this!!!
+        public void AssertTryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions)
+        {
+            //KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
+            //Assumptions:
+            k1.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k2.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
+            k1.Should().NotEqual(k2, "ASSUMPTION!");
+            subKeys.Should().HaveCount(positions.Count());
+
+            bool k1HasPartialKey = Enumerable.Intersect(k1, subKeys).Count().Equals(Enumerable.Count(subKeys));
+            bool k2HasPartialKey = Enumerable.Intersect(k2, subKeys).Count().Equals(Enumerable.Count(subKeys));
+            int expectedCount = (k1HasPartialKey ? 1 : 0) + (k2HasPartialKey ? 1 : 0);
+            
+            IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
+
+            multiDict.Add(k1, v1);
+            multiDict.Add(k2, v2);
+            bool result = multiDict.TryGetFullKeysByPartialKey(partialKey, out var actualKeys);
+            result.Should().Be(expectedCount > 0);
+
+            if (!result)
+            {
+                actualKeys.Should().Equal(default(ISet<K>));
+            }
+            else
+            {
+                actualKeys.Should().NotBeNull().And.OnlyHaveUniqueItems().And.NotContainNulls().And.HaveCount(expectedCount);
+            }
+
+            if (k1HasPartialKey)
+            {
+                actualKeys.Should().Contain(k1);
+            }
+
+            if (k2HasPartialKey)
+            {
+                actualKeys.Should().Contain(k2);
+            }
+        }
+
     }
 }
