@@ -1,6 +1,6 @@
 ﻿using System;
-using GitHub.Protobufel.MultiKeyMap;
 using System.Collections.Generic;
+using GitHub.Protobufel.MultiKeyMap;
 
 namespace MultiKeyMapTests
 {

@@ -1,37 +1,15 @@
 ﻿using System;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GitHub.Protobufel.MultiKeyMap;
 using System.Collections.Generic;
 using FluentAssertions;
+using GitHub.Protobufel.MultiKeyMap;
 using GitHub.Protobufel.MultiKeyMap.Extensions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MultiKeyMapTests
 {
     [TestClass]
     public class MultiKeyMapExtensionsTests
     {
-
-        #region creation helpers
-        private IMultiKeyMap<T, K, V> CreateMultiKeyMap<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
-        {
-            var map = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>();
-
-            foreach (var entry in keys.Zip(values, (k, v) => new KeyValuePair<K, V>(k, v)))
-            {
-                map.Add(entry);
-            }
-
-            return map;
-        }
-
-        private IDictionary<K, V> CreateDictionary<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
-        {
-            var map = keys.Zip(values, (k, v) => new KeyValuePair<K, V>(k, v)).ToDictionary(entry => entry.Key, entry => entry.Value);
-            return map;
-        }
-        #endregion
-
         [TestMethod]
         public void CopyFromMultiKeyMapToEmptyTest()
         {
@@ -42,7 +20,7 @@ namespace MultiKeyMapTests
 
         private void CopyFromMultiKeyMapToEmptyHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateMultiKeyMap<T, K, V>(keys, values);
+            var source = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
             var target = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>();
 
             var result = MultiKeyMapCopyExtensions.CopyFrom(target, source);
@@ -60,8 +38,8 @@ namespace MultiKeyMapTests
 
         private void CopyFromMultiKeyMapToDuplicateHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateMultiKeyMap<T, K, V>(keys, values);
-            var target = CreateMultiKeyMap<T, K, V>(keys, values);
+            var source = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
+            var target = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
 
             Action act = () => MultiKeyMapCopyExtensions.CopyFrom(target, source);
             act.ShouldThrow<ArgumentException>();
@@ -77,7 +55,7 @@ namespace MultiKeyMapTests
 
         private void CopyFromDictionaryToEmptyHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateDictionary<T, K, V>(keys, values);
+            var source = TestHelpers.CreateDictionary<T, K, V>(keys, values);
             var target = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>();
 
             var result = MultiKeyMapCopyExtensions.CopyFrom(target, source);
@@ -95,8 +73,8 @@ namespace MultiKeyMapTests
 
         private void CopyFromDictionaryToDuplicateHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateDictionary<T, K, V>(keys, values);
-            var target = CreateMultiKeyMap<T, K, V>(keys, values);
+            var source = TestHelpers.CreateDictionary<T, K, V>(keys, values);
+            var target = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
 
             Action act = () => MultiKeyMapCopyExtensions.CopyFrom(target, source);
             act.ShouldThrow<ArgumentException>();
@@ -112,8 +90,8 @@ namespace MultiKeyMapTests
 
         private void OfMultiKeyMapToDuplicateHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateMultiKeyMap<T, K, V>(keys, values);
-            var target = CreateMultiKeyMap<T, K, V>(keys, values);
+            var source = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
+            var target = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
 
             var result = MultiKeyMapCopyExtensions.Of(target, source);
             result.Should().NotBeNull().And.BeSameAs(target).And.Equal(source);
@@ -129,8 +107,8 @@ namespace MultiKeyMapTests
 
         private void OfDictionaryToDuplicateHelper<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
         {
-            var source = CreateDictionary<T, K, V>(keys, values);
-            var target = CreateMultiKeyMap<T, K, V>(keys, values);
+            var source = TestHelpers.CreateDictionary<T, K, V>(keys, values);
+            var target = TestHelpers.CreateMultiKeyMap<T, K, V>(keys, values);
 
             var result = MultiKeyMapCopyExtensions.Of(target, source);
             result.Should().NotBeNull().And.BeSameAs(target).And.Equal(source);

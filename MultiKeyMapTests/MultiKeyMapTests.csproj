@@ -62,6 +62,7 @@
     <Compile Include="ConcreteMultiKeyMapTests.cs" />
     <Compile Include="MultiKeyMapBaseHelper.cs" />
     <Compile Include="MultiKeyMapRefHelper.cs" />
+    <Compile Include="TestHelpers.cs" />
     <Compile Include="MultimapExtensionsTests.cs" />
     <Compile Include="MultiKeyMapsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

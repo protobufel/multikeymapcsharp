@@ -1,8 +1,8 @@
 ﻿using System;
-using GitHub.Protobufel.MultiKeyMap;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
+using GitHub.Protobufel.MultiKeyMap;
 
 namespace MultiKeyMapTests
 {
@@ -15,6 +15,11 @@ namespace MultiKeyMapTests
         private V v1 = default(V);
         private K k2 = default(K);
         private V v2 = default(V);
+
+        // an improved test MultiKeyMap
+        private IMultiKeyMap<T, K, V> queryMap1;
+        private IMultiKeyMap<T, K, V> queryMap2;
+
 
         public MultiKeyMapBaseHelper(Func<IMultiKeyMap<T, K, V>> supplier, K k1, K k2, V v1 = default(V), V v2 = default(V))
         {
@@ -31,10 +36,20 @@ namespace MultiKeyMapTests
             mirrorDict = new Dictionary<K, V>();
         }
 
+
+        public void Init(K[] keys, V[] values, Func<IMultiKeyMap<T, K, V>> supplier = null)
+        {
+            supplier = supplier ?? Supplier;
+            queryMap1 = TestHelpers.CreateMultiKeyMap(keys, values, supplier);
+            queryMap2 = TestHelpers.CreateMultiKeyMap(keys, values, supplier);
+        }
+
         public void Cleanup()
         {
             multiDict = null;
             mirrorDict = null;
+            queryMap1 = null;
+            queryMap2 = null;
         }
 
         // () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>();
@@ -353,47 +368,34 @@ namespace MultiKeyMapTests
             }
         }
 
-
-        //TODO REDO and complete this!!!
-        public void AssertTryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions)
+        public void AssertTryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, ISet<K> expectedOut)
         {
-            //KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
-            //Assumptions:
-            k1.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
-            k2.Should().HaveCount((x) => x >= 3, "ASSUMPTION!");
-            k1.Should().NotEqual(k2, "ASSUMPTION!");
-            subKeys.Should().HaveCount(positions.Count());
-
-            bool k1HasPartialKey = Enumerable.Intersect(k1, subKeys).Count().Equals(Enumerable.Count(subKeys));
-            bool k2HasPartialKey = Enumerable.Intersect(k2, subKeys).Count().Equals(Enumerable.Count(subKeys));
-            int expectedCount = (k1HasPartialKey ? 1 : 0) + (k2HasPartialKey ? 1 : 0);
-            
             IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
 
-            multiDict.Add(k1, v1);
-            multiDict.Add(k2, v2);
-            bool result = multiDict.TryGetFullKeysByPartialKey(partialKey, out var actualKeys);
-            result.Should().Be(expectedCount > 0);
+            bool actualReturn = queryMap1.TryGetFullKeysByPartialKey(partialKey, out var actualOut);
 
-            if (!result)
-            {
-                actualKeys.Should().Equal(default(ISet<K>));
-            }
-            else
-            {
-                actualKeys.Should().NotBeNull().And.OnlyHaveUniqueItems().And.NotContainNulls().And.HaveCount(expectedCount);
-            }
-
-            if (k1HasPartialKey)
-            {
-                actualKeys.Should().Contain(k1);
-            }
-
-            if (k2HasPartialKey)
-            {
-                actualKeys.Should().Contain(k2);
-            }
+            actualReturn.Should().Be(expectedOut != default(ISet<K>));
+            actualOut.ShouldAllBeEquivalentTo(expectedOut);
         }
 
+        public void AssertTryGetValuesByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, ICollection<V> expectedOut)
+        {
+            IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
+
+            bool actualReturn = queryMap1.TryGetValuesByPartialKey(partialKey, out ICollection<V> actualOut);
+
+            actualReturn.Should().Be(expectedOut != default(ICollection<V>));
+            actualOut.ShouldAllBeEquivalentTo(expectedOut);
+        }
+
+        public void AssertTryGetEntriesByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, ICollection<KeyValuePair<K, V>> expectedOut)
+        {
+            IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
+
+            bool actualReturn = queryMap1.TryGetEntriesByPartialKey(partialKey, out ICollection<KeyValuePair<K, V>> actualOut);
+
+            actualReturn.Should().Be(expectedOut != default(ICollection<KeyValuePair<K, V>>));
+            actualOut.ShouldAllBeEquivalentTo(expectedOut);
+        }
     }
 }

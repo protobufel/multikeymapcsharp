@@ -1,10 +1,8 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GitHub.Protobufel.MultiKeyMap;
 //using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
-using FluentAssertions;
+using GitHub.Protobufel.MultiKeyMap;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MultiKeyMapTests
 {
@@ -14,7 +12,7 @@ namespace MultiKeyMapTests
         private MultiKeyMapBaseHelper<int, int[], object> helper1;
         private MultiKeyMapBaseHelper<string, string[], long> helper2;
         private MultiKeyMapBaseHelper<Class1<string>, List<Class1<string>>, string> helper3;
-        private MultiKeyMapBaseHelper<Struct1<double>, List<Struct1<double>>, bool> helper4;
+        private MultiKeyMapBaseHelper<ValueTuple<double>, List<ValueTuple<double>>, bool> helper4;
 
         //[ClassInitialize]
         public ConcreteMultiKeyMapTests()
@@ -22,12 +20,12 @@ namespace MultiKeyMapTests
             helper1 = InitHelper<int, int[], object>(new[] { 1, 2, 3, 4 }, new[] { 2, 5, 6, 3 }, new { A = 1, B = "hi" });
             helper2 = InitHelper<string, string[], long>(new[] { "1", "2", "6", "hi" }, new[] { "hi", "a", "c", "2" }, 99);
             helper3 = InitHelper<Class1<string>, List<Class1<string>>, string>(
-                new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M")},
-                new List<Class1<string>>() { GetClass1("C"), GetClass1("a"), GetClass1("M"), GetClass1("Y") }, 
+                new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") },
+                new List<Class1<string>>() { GetClass1("C"), GetClass1("a"), GetClass1("M"), GetClass1("Y") },
                 "first", "second");
-            helper4 = InitHelper<Struct1<double>, List<Struct1<double>>, bool>(
-                new List<Struct1<double>>() { GetStruct1(1.1), GetStruct1(2.2), GetStruct1(3.3) },
-                new List<Struct1<double>>() { GetStruct1(3.3), GetStruct1(4.0), GetStruct1(5.5), GetStruct1(2.2) },
+            helper4 = InitHelper<ValueTuple<double>, List<ValueTuple<double>>, bool>(
+                new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) },
+                new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) },
                 true, false);
         }
 
@@ -38,6 +36,44 @@ namespace MultiKeyMapTests
             helper2.Init();
             helper3.Init();
             helper4.Init();
+
+            helper1.Init(
+                new int[][]{
+                    new int[]{ 1, 2, 3, 4 }, new int[] { 4, 3, 5 }, new int[] { 5, 1, 8 },
+                    new int[] { 1, 2, 3, 4, 5, 6 }, new int[] { 30, -10 } },
+
+                new object[]{
+                    new { A = 1, B = "hi" }, new { A = 1, B = "hi2" }, new { A = 1, B = "hi3" },
+                    new { A = 1, B = "hi4" },new { A = 1, B = "hi5" }
+                });
+            helper2.Init(
+                new string[][]{
+                    new string[]{ "1", "2", "3", "4" }, new string[] { "4", "3", "5" }, new string[] { "5", "1", "8" },
+                    new string[] { "1", "2", "3", "4", "5", "6" }, new string[] { "30", "-10" } },
+
+                new long[]{
+                    1, 2, 3, 4, 5
+                });
+            helper3.Init(
+               new List<Class1<string>>[] {
+                   new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") },
+                   new List<Class1<string>>() { GetClass1("C"), GetClass1("M"), GetClass1("a"), GetClass1("Y") },
+                   new List<Class1<string>>() { GetClass1("d"), GetClass1("v"), GetClass1("Y"), GetClass1("M") }},
+
+                   new string[] { "1", "2", "3" }
+                );
+            helper4.Init(
+                new List<ValueTuple<double>>[] {
+                    new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) },
+                    new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) },
+                    new List<ValueTuple<double>>() { GetValueTuple(4.4), GetValueTuple(4.0), GetValueTuple(7.0), GetValueTuple(12.5) },
+                    new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(-2.0), GetValueTuple(99.34) },
+                },
+                new bool[]
+                {
+                    true,false,true, true
+                }
+                );
         }
 
         [TestCleanup]
@@ -122,10 +158,10 @@ namespace MultiKeyMapTests
         [TestMethod]
         public void GetFullKeysByPartialKeyTest()
         {
-            helper1.AssertGetFullKeysByPartialKey(new List<int> ()  { 3, 2 });
+            helper1.AssertGetFullKeysByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertGetFullKeysByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertGetFullKeysByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetFullKeysByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertGetFullKeysByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
         }
 
 
@@ -135,7 +171,7 @@ namespace MultiKeyMapTests
             helper1.AssertGetValuesByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertGetValuesByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertGetValuesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetValuesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertGetValuesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
         }
 
         [TestMethod]
@@ -144,7 +180,7 @@ namespace MultiKeyMapTests
             helper1.AssertGetEntriesByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertGetEntriesByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertGetEntriesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetEntriesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertGetEntriesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
         }
 
         [TestMethod]
@@ -153,9 +189,8 @@ namespace MultiKeyMapTests
             helper1.AssertTryGetFullKeysByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertTryGetFullKeysByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertTryGetFullKeysByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertTryGetFullKeysByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertTryGetFullKeysByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
         }
-
 
         [TestMethod]
         public void TryGetValuesByPartialKeyTest()
@@ -163,7 +198,7 @@ namespace MultiKeyMapTests
             helper1.AssertTryGetValuesByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertTryGetValuesByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertTryGetValuesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertTryGetValuesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertTryGetValuesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
         }
 
         [TestMethod]
@@ -172,7 +207,51 @@ namespace MultiKeyMapTests
             helper1.AssertTryGetEntriesByPartialKey(new List<int>() { 3, 2 });
             helper2.AssertTryGetEntriesByPartialKey(new List<string>() { "6", "2" });
             helper3.AssertTryGetEntriesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertTryGetEntriesByPartialKey(new[] { GetStruct1(3.3), GetStruct1(2.2) });
+            helper4.AssertTryGetEntriesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
+        }
+
+        [TestMethod]
+        public void PositionedTryGetFullKeysByPartialKeyTest()
+        {
+            helper4.AssertTryGetFullKeysByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) }, new int[] { -1, -1 }, new HashSet<List<ValueTuple<double>>>() {
+                new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) },
+                new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) }
+            });
+            helper3.AssertTryGetFullKeysByPartialKey(new[] { GetClass1("M"), GetClass1("b") }, new int[] { 2, -1 },
+                new HashSet<List<Class1<string>>>() { new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") } });
+            helper1.AssertTryGetFullKeysByPartialKey(new List<int>() { 3, 2 }, new int[] { -1, 1 }, new HashSet<int[]>() { new int[] { 1, 2, 3, 4 }, new int[] { 1, 2, 3, 4, 5, 6 } });
+            helper2.AssertTryGetFullKeysByPartialKey(new List<string>() { "6", "2" }, new int[] { 5, -1 }, new HashSet<string[]>() { new string[] { "1", "2", "3", "4", "5", "6" } });
+        }
+
+        [TestMethod]
+        public void PositionedTryGetValuesByPartialKeyTest()
+        {
+            helper1.AssertTryGetValuesByPartialKey(new List<int>() { 3, 2 }, new int[] { -1, 1 }, new List<object>() { new { A = 1, B = "hi" }, new { A = 1, B = "hi4" } });
+            helper2.AssertTryGetValuesByPartialKey(new List<string>() { "6", "2" }, new int[] { 5, -1 }, new List<long>() { 4 });
+            helper3.AssertTryGetValuesByPartialKey(new[] { GetClass1("M"), GetClass1("b") }, new int[] { 2, -1 }, new List<string>() { "1" });
+            helper4.AssertTryGetValuesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) }, new int[] { -1, -1 }, new List<bool>() { true, false });
+        }
+
+        [TestMethod]
+        public void PositionedTryGetEntriesByPartialKeyTest()
+        {
+            helper1.AssertTryGetEntriesByPartialKey(new List<int>() { 3, 2 }, new int[] { -1, 1 },
+                new List<KeyValuePair<int[], object>>() {
+                    new KeyValuePair<int[], object>(new int[] { 1, 2, 3, 4 }, new { A = 1, B = "hi" }),
+                    new KeyValuePair<int[], object>(new int[] { 1, 2, 3, 4, 5, 6 }, new { A = 1, B = "hi4" })
+                });
+
+            helper2.AssertTryGetEntriesByPartialKey(new List<string>() { "6", "2" }, new int[] { 5, -1 },
+                new List<KeyValuePair<string[], long>>() { new KeyValuePair<string[], long>(new string[] { "1", "2", "3", "4", "5", "6" }, 4) });
+
+            helper3.AssertTryGetEntriesByPartialKey(new[] { GetClass1("M"), GetClass1("b") }, new int[] { 2, -1 },
+                new List<KeyValuePair<List<Class1<string>>, string>>() {
+                    new KeyValuePair<List<Class1<string>>, string>(new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") }, "1")});
+
+            helper4.AssertTryGetEntriesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) }, new int[] { -1, -1 },
+                new List<KeyValuePair<List<ValueTuple<double>>, bool>>() {
+                    new KeyValuePair<List<ValueTuple<double>>, bool>(new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) }, true),
+                    new KeyValuePair<List<ValueTuple<double>>, bool>(new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) }, false) });
         }
 
         private Class1<T> GetClass1<T>(T any)
@@ -180,29 +259,15 @@ namespace MultiKeyMapTests
             return new Class1<T>(any);
         }
 
-        private Struct1<T> GetStruct1<T>(T any)
+        private ValueTuple<T> GetValueTuple<T>(T any)
         {
-            return new Struct1<T>(any);
+            return new ValueTuple<T>(any);
         }
 
-        public class Class1<T>
+        public class Class1<T> : Tuple<T>
         {
-            public Class1()
-            {
-                Name = default(T);
-            }
 
-            public Class1(T name)
-            {
-                Name = name;
-            }
-
-            public T Name { get; private set; }
-        }
-
-        public struct Struct1<T>
-        {
-            public Struct1(T name)
+            public Class1(T name) : base(name)
             {
                 Name = name;
             }

@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GitHub.Protobufel.MultiKeyMap;
-//using System.Linq;
+﻿//using System.Linq;
 using System.Collections.Generic;
 using FluentAssertions;
+using GitHub.Protobufel.MultiKeyMap;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 //using FluentAssertions.Types;
 //using FluentAssertions.Collections;
 
@@ -24,7 +24,7 @@ namespace MultiKeyMapTests
             CreatesEmptyInstanceHelper("1", new[] { "1", "2"}, 99);
             CreatesEmptyInstanceHelper(GetClass1("hi"), new List<Class1<string>>(){ GetClass1("a"), GetClass1("b") }, true);
             CreatesEmptyInstanceHelper(GetClass1(3.5), new HashSet<Class1<double>>() { GetClass1(1.1), GetClass1(2.2) }, true);
-            CreatesEmptyInstanceHelper(GetStruct1(3.5), new HashSet<Struct1<double>>() { GetStruct1(1.1), GetStruct1(2.2) }, true);
+            CreatesEmptyInstanceHelper(GetValueTuple(3.5), new HashSet<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2) }, true);
         }
 
         private IMultiKeyMap<T,K,V> CreatesEmptyInstanceHelper<T,K,V>(T t, K k, V v) where K : IEnumerable<T>
@@ -44,7 +44,7 @@ namespace MultiKeyMapTests
             AddHelper("1", new[] { "1", "2" }, 99);
             AddHelper(GetClass1("hi"), new List<Class1<string>>() { GetClass1("a"), GetClass1("b") }, true);
             AddHelper(GetClass1(3.5), new HashSet<Class1<double>>() { GetClass1(1.1), GetClass1(2.2) }, true);
-            AddHelper(GetStruct1(3.5), new HashSet<Struct1<double>>() { GetStruct1(1.1), GetStruct1(2.2) }, true);
+            AddHelper(GetValueTuple(3.5), new HashSet<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2) }, true);
         }
 
         private IMultiKeyMap<T, K, V> AddHelper<T, K, V>(T t, K k, V v) where K : IEnumerable<T>
@@ -77,9 +77,9 @@ namespace MultiKeyMapTests
             return new Class1<T>(any);
         }
 
-        private Struct1<T> GetStruct1<T>(T any)
+        private ValueTuple<T> GetValueTuple<T>(T any)
         {
-            return new Struct1<T>(any);
+            return new ValueTuple<T>(any);
         }
 
         public class Class1<T>
@@ -97,9 +97,9 @@ namespace MultiKeyMapTests
             public T Name { get; private set; }
         }
 
-        public struct Struct1<T>
+        public struct ValueTuple<T>
         {
-            public Struct1(T name)
+            public ValueTuple(T name)
             {
                 Name = name;
             }

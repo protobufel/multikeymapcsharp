@@ -306,41 +306,21 @@ namespace GitHub.Protobufel.MultiKeyMap
             IList<ISet<K>> subResults = new List<ISet<K>>();
             int minSize = int.MaxValue;
             int minPos = -1;
+            (int position, T subkey) bagAtMinPos = default((int position, T subkey));
 
             foreach (var bag in partialKey)
             {
-
                 if (!partMap.TryGetValue(bag.subkey, out ISet<K> subResult))
                 {
                     fullKeys = default(ISet<K>);
                     return false;
                 }
 
-                if (bag.position > 0)
-                {
-                    ISet<K> filteredSubResult = new HashSet<K>();
-
-                    foreach (K fullKey in subResult)
-                    {
-                        if (bag.subkey.Equals(fullKey.ElementAtOrDefault(bag.position)))
-                        {
-                            filteredSubResult.Add(fullKey);
-                        }
-                    }
-
-                    if (filteredSubResult.Count == 0)
-                    {
-                        fullKeys = default(ISet<K>);
-                        return false;
-                    }
-
-                    subResult = filteredSubResult;
-                }
-
                 if (subResult.Count < minSize)
                 {
                     minSize = subResult.Count;
                     minPos = subResults.Count;
+                    bagAtMinPos = bag;
                 }
 
                 subResults.Add(subResult);
@@ -352,18 +332,37 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            fullKeys = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
+            if (minPos < 0)
+            {
+                fullKeys = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
+
+            }
+            else if (!TryGetFilteredFullKeys(bagAtMinPos.position, bagAtMinPos.subkey, subResults[minPos], partMap.ValueComparer, out fullKeys))
+            {
+                return false;
+            }
 
             if (subResults.Count == 1)
             {
                 return true;
             }
 
+            var it = partialKey.GetEnumerator();
+
             for (int i = 0; i < subResults.Count; i++)
             {
+                it.MoveNext();
+                var bag = it.Current;
+
                 if (i != minPos)
                 {
-                    fullKeys.IntersectWith(subResults[i]);
+                    if (!TryGetFilteredFullKeys(bag.position, bag.subkey, subResults[i], partMap.ValueComparer, out ISet<K> filteredSubResult))
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
+
+                    fullKeys.IntersectWith(filteredSubResult);
 
                     if (fullKeys.Count == 0)
                     {
@@ -371,6 +370,39 @@ namespace GitHub.Protobufel.MultiKeyMap
                         return false;
                     }
                 }
+            }
+
+            return true;
+        }
+
+        private bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
+        {
+            if (position < 0)
+            {
+                target = source;
+                return true;
+            }
+
+            if (source.Count == 0)
+            {
+                target = default(ISet<K>);
+                return false;
+            }
+
+            target = new HashSet<K>(comparer);
+
+            foreach (K fullKey in source)
+            {
+                if (subkey.Equals(fullKey.ElementAtOrDefault(position)))
+                {
+                    target.Add(fullKey);
+                }
+            }
+
+            if (target.Count == 0)
+            {
+                target = default(ISet<K>);
+                return false;
             }
 
             return true;
