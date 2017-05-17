@@ -14,6 +14,6 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         bool Add(K key, V value);
 
-        IEqualityComparer<V> ValueComparer { get; }
+        //IEqualityComparer<V> ValueComparer { get; }
     }
 }

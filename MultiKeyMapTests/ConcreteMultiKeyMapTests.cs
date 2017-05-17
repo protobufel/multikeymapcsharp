@@ -3,6 +3,10 @@
 using System.Collections.Generic;
 using GitHub.Protobufel.MultiKeyMap;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using System.IO;
 
 namespace MultiKeyMapTests
 {
@@ -224,6 +228,42 @@ namespace MultiKeyMapTests
                 new List<KeyValuePair<List<ValueTuple<double>>, bool>>() {
                     new KeyValuePair<List<ValueTuple<double>>, bool>(new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) }, true),
                     new KeyValuePair<List<ValueTuple<double>>, bool>(new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) }, false) });
+        }
+
+        [TestMethod]
+        public void SerializationTest()
+        {
+            var myObj1 = MultiKeyMaps.CreateMultiKeyDictionary<int, int[], string>();
+            myObj1.Add(new int[] { 1, 2 }, "hi");
+            myObj1.Add(new int[] { 3, 4 }, "bye");
+
+            byte[] serialized = SerializeHelper(myObj1);
+            var myObj2 = DeserializeHelper<IMultiKeyMap<int, int[], string>>(serialized);
+            myObj2.ShouldAllBeEquivalentTo(myObj1);
+
+        }
+
+        private byte[] SerializeHelper<T>(T serialObj)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                formatter.Serialize(memoryStream, serialObj);
+                //memoryStream.Position = 0;
+                return memoryStream.ToArray();
+            }
+
+        }
+
+        private T DeserializeHelper<T>(byte[] serialized)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            using (MemoryStream memoryStream = new MemoryStream(serialized))
+            {
+                return (T)formatter.Deserialize(memoryStream);
+            }
         }
 
         private Class1<T> GetClass1<T>(T any)

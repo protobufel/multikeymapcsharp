@@ -20,6 +20,9 @@ namespace MultiKeyMapTests
         private IMultiKeyMap<T, K, V> queryMap1;
         private IMultiKeyMap<T, K, V> queryMap2;
 
+        public IMultiKeyMap<T, K, V> QueryMap1 => queryMap1;
+        public IMultiKeyMap<T, K, V> QueryMap2 => queryMap2;
+
 
         public MultiKeyMapBaseHelper(Func<IMultiKeyMap<T, K, V>> supplier, K k1, K k2, V v1 = default(V), V v2 = default(V))
         {
@@ -304,6 +307,12 @@ namespace MultiKeyMapTests
 
             actualReturn.Should().Be(expectedOut != default(ICollection<KeyValuePair<K, V>>));
             actualOut.ShouldAllBeEquivalentTo(expectedOut);
+        }
+
+
+        public void AssertSerialization()
+        {
+            //queryMap1.Should().
         }
     }
 }

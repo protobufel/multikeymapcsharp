@@ -2,19 +2,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    internal class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    [Serializable]
+    internal abstract class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
-        private IDictionary<K, V> fullMap;
-        private ILiteSetMultimap<T, K> partMap;
+        internal protected IDictionary<K, V> fullMap;
+        [NonSerialized]
+        internal protected ILiteSetMultimap<T, K> partMap;
 
-        internal BaseMultiKeyMap(IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
+        protected internal IEqualityComparer<K> fullKeyComparer;
+        protected internal IEqualityComparer<T> subKeyComparer;
+
+        internal BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer, IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
         {
             this.fullMap = fullMap;
             this.partMap = partMap;
+            this.subKeyComparer = subKeyComparer;
+            this.fullKeyComparer = fullKeyComparer;
         }
+
+        protected internal IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
 
         #region non-positional TryGetsByPartialKey
         public bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values)
@@ -106,7 +116,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            fullKeys = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
+            fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
             if (subResults.Count == 1)
             {
@@ -222,10 +232,10 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             if (minPos < 0)
             {
-                fullKeys = new HashSet<K>(subResults[minPos], partMap.ValueComparer);
+                fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
             }
-            else if (!TryGetFilteredFullKeys(bagAtMinPos.position, bagAtMinPos.subkey, subResults[minPos], partMap.ValueComparer, out fullKeys))
+            else if (!TryGetFilteredFullKeys(bagAtMinPos.position, bagAtMinPos.subkey, subResults[minPos], FullKeyComparer, out fullKeys))
             {
                 return false;
             }
@@ -244,7 +254,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
                 if (i != minPos)
                 {
-                    if (!TryGetFilteredFullKeys(bag.position, bag.subkey, subResults[i], partMap.ValueComparer, out ISet<K> filteredSubResult))
+                    if (!TryGetFilteredFullKeys(bag.position, bag.subkey, subResults[i], FullKeyComparer, out ISet<K> filteredSubResult))
                     {
                         fullKeys = default(ISet<K>);
                         return false;
@@ -341,7 +351,8 @@ namespace GitHub.Protobufel.MultiKeyMap
         #endregion
 
         #region Implementation of the partial map helpers
-        private void AddPartial(K key)
+
+        internal protected void AddPartial(K key)
         {
             foreach (T subKey in key)
             {
@@ -349,13 +360,14 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        private void DeletePartial(K key)
+        internal protected void DeletePartial(K key)
         {
             foreach (T subKey in key)
             {
                 partMap.Remove(subKey, key);
             }
         }
+
         #endregion
 
         public V this[K key]
