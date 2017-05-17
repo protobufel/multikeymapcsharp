@@ -156,34 +156,6 @@ namespace MultiKeyMapTests
         }
 
         [TestMethod]
-        public void GetFullKeysByPartialKeyTest()
-        {
-            helper1.AssertGetFullKeysByPartialKey(new List<int>() { 3, 2 });
-            helper2.AssertGetFullKeysByPartialKey(new List<string>() { "6", "2" });
-            helper3.AssertGetFullKeysByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetFullKeysByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
-        }
-
-
-        [TestMethod]
-        public void GetValuesByPartialKeyTest()
-        {
-            helper1.AssertGetValuesByPartialKey(new List<int>() { 3, 2 });
-            helper2.AssertGetValuesByPartialKey(new List<string>() { "6", "2" });
-            helper3.AssertGetValuesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetValuesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
-        }
-
-        [TestMethod]
-        public void GetEntriesByPartialKeyTest()
-        {
-            helper1.AssertGetEntriesByPartialKey(new List<int>() { 3, 2 });
-            helper2.AssertGetEntriesByPartialKey(new List<string>() { "6", "2" });
-            helper3.AssertGetEntriesByPartialKey(new[] { GetClass1("M"), GetClass1("b") });
-            helper4.AssertGetEntriesByPartialKey(new[] { GetValueTuple(3.3), GetValueTuple(2.2) });
-        }
-
-        [TestMethod]
         public void TryGetFullKeysByPartialKeyTest()
         {
             helper1.AssertTryGetFullKeysByPartialKey(new List<int>() { 3, 2 });

@@ -15,30 +15,6 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// Gets all values  for which their full keys contain the partial key set in any order.
         /// </summary>
         /// <param name="partialKey">The combination of the sub-keys to search for.</param>
-        /// <returns>A non-live non-null, possibly empty, sequence of the values satisfying the partial key criteria.</returns>
-        [Obsolete("This method is obsolete. Call TryGetValuesByPartialKey instead.", false)]
-        IEnumerable<V> GetValuesByPartialKey(IEnumerable<T> partialKey);
-
-        /// <summary>
-        /// Gets all KeyValuePairs for which their full keys contain the partial key set in any order.
-        /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for.</param>
-        /// <returns>A non-live non-null, possibly empty, sequence of the KeyValuePair(-s) satisfying the partial key criteria.</returns>
-        [Obsolete("This method is obsolete. Call TryGetEntriesByPartialKey instead.", false)]
-        IEnumerable<KeyValuePair<K, V>> GetEntriesByPartialKey(IEnumerable<T> partialKey);
-
-        /// <summary>
-        /// Gets all full keys that contain the partial key set in any order.
-        /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for.</param>
-        /// <returns>A non-live non-null, possibly empty, sequence of the full keys satisfying the partial key criteria.</returns>
-        [Obsolete("This method is obsolete. Call TryGetFullKeysByPartialKey instead.", false)]
-        IEnumerable<K> GetFullKeysByPartialKey(IEnumerable<T> partialKey);
-
-        /// <summary>
-        /// Gets all values  for which their full keys contain the partial key set in any order.
-        /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for.</param>
         /// <param name="values">A non-live non-empty sequence of the values satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values);
