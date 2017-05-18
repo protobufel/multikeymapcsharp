@@ -13,15 +13,13 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>1. Removed all deprecations. 
-2. Changed the MultiKeyMaps main factory class a bit.
-3. Made the returned Dictionary-based IMultiKeyMap implementations serializable.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed MultiKeyMaps.CreateMultiKeyDictionary method with parameters.</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>2.0.1.0</AssemblyVersion>
-    <FileVersion>2.0.1.0</FileVersion>
-    <Version>2.0.1</Version>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
+    <FileVersion>2.0.2.0</FileVersion>
+    <Version>2.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

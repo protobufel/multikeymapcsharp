@@ -7,6 +7,7 @@ using FluentAssertions;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.IO;
+using static MultiKeyMapTests.CommonHelpers;
 
 namespace MultiKeyMapTests
 {
@@ -241,50 +242,6 @@ namespace MultiKeyMapTests
             var myObj2 = DeserializeHelper<IMultiKeyMap<int, int[], string>>(serialized);
             myObj2.ShouldAllBeEquivalentTo(myObj1);
 
-        }
-
-        private byte[] SerializeHelper<T>(T serialObj)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                formatter.Serialize(memoryStream, serialObj);
-                //memoryStream.Position = 0;
-                return memoryStream.ToArray();
-            }
-
-        }
-
-        private T DeserializeHelper<T>(byte[] serialized)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-
-            using (MemoryStream memoryStream = new MemoryStream(serialized))
-            {
-                return (T)formatter.Deserialize(memoryStream);
-            }
-        }
-
-        private Class1<T> GetClass1<T>(T any)
-        {
-            return new Class1<T>(any);
-        }
-
-        private ValueTuple<T> GetValueTuple<T>(T any)
-        {
-            return new ValueTuple<T>(any);
-        }
-
-        public class Class1<T> : Tuple<T>
-        {
-
-            public Class1(T name) : base(name)
-            {
-                Name = name;
-            }
-
-            public T Name { get; private set; }
         }
     }
 }

@@ -13,7 +13,5 @@ namespace GitHub.Protobufel.MultiKeyMap
         bool TryGetValue(K key, out ISet<V> value);
 
         bool Add(K key, V value);
-
-        //IEqualityComparer<V> ValueComparer { get; }
     }
 }

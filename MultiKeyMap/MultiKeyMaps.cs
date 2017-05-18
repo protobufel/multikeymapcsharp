@@ -36,9 +36,10 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="subKeyComparer">The custom IEqualityComparer for sub-keys.</param>
         /// <param name="fullKeyComparer">The custom IEqualityComparer for full keys.</param>
         /// <returns>The serializable instance of the Dictionary-based IMultiKeyMap implementation.</returns>
-        public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(IEqualityComparer<T> subKeyComparer,
+            IEqualityComparer<K> fullKeyComparer) where K : IEnumerable<T>
         {
-            return new DictionaryBaseMultiKeyMap<T, K, V>(EqualityComparer<T>.Default, EqualityComparer<K>.Default);
+            return new DictionaryBaseMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
         }
     }
 }
