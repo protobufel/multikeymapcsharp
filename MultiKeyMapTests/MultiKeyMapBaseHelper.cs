@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using GitHub.Protobufel.MultiKeyMap;
+using GitHub.Protobufel.MultiKeyMap.Extensions;
 
 namespace MultiKeyMapTests
 {

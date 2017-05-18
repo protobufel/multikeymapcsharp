@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -16,7 +15,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
-        internal BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer, 
+        internal BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
             IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
         {
             this.fullMap = fullMap ?? throw new ArgumentNullException("fullMap");
@@ -146,9 +145,9 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         #region positioned filtered queries
 
-        public virtual bool TryGetValuesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<V> values)
+        public virtual bool TryGetValuesByPartialKey(IList<T> subKeys, IList<int> positions, out ICollection<V> values)
         {
-            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            if (!TryGetFullKeysByPartialKey(subKeys, positions, out ISet<K> fullKeys))
             {
                 values = default(ICollection<V>);
                 return false;
@@ -172,9 +171,9 @@ namespace GitHub.Protobufel.MultiKeyMap
             return true;
         }
 
-        public virtual bool TryGetEntriesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<KeyValuePair<K, V>> entries)
+        public virtual bool TryGetEntriesByPartialKey(IList<T> subKeys, IList<int> positions, out ICollection<KeyValuePair<K, V>> entries)
         {
-            if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
+            if (!TryGetFullKeysByPartialKey(subKeys, positions, out ISet<K> fullKeys))
             {
                 entries = default(ICollection<KeyValuePair<K, V>>);
                 return false;
@@ -199,18 +198,24 @@ namespace GitHub.Protobufel.MultiKeyMap
             return true;
         }
 
-        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ISet<K> fullKeys)
+        public virtual bool TryGetFullKeysByPartialKey(IList<T> subKeys, IList<int> positions, out ISet<K> fullKeys)
         {
-            if (partialKey == null) throw new ArgumentNullException();
+            if (subKeys == null) throw new ArgumentNullException("subKeys");
+            if (positions == null) throw new ArgumentNullException("positions");
+
+            if (subKeys.Count == 0)
+            {
+                fullKeys = default(ISet<K>);
+                return false;
+            }
 
             IList<ISet<K>> subResults = new List<ISet<K>>();
             int minSize = int.MaxValue;
             int minPos = -1;
-            (int position, T subkey) bagAtMinPos = default((int position, T subkey));
 
-            foreach (var bag in partialKey)
+            foreach (var subKey in subKeys)
             {
-                if (!partMap.TryGetValue(bag.subkey, out ISet<K> subResult))
+                if (!partMap.TryGetValue(subKey, out ISet<K> subResult))
                 {
                     fullKeys = default(ISet<K>);
                     return false;
@@ -220,7 +225,6 @@ namespace GitHub.Protobufel.MultiKeyMap
                 {
                     minSize = subResult.Count;
                     minPos = subResults.Count;
-                    bagAtMinPos = bag;
                 }
 
                 subResults.Add(subResult);
@@ -237,7 +241,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
             }
-            else if (!TryGetFilteredFullKeys(bagAtMinPos.position, bagAtMinPos.subkey, subResults[minPos], FullKeyComparer, out fullKeys))
+            else if (!TryGetFilteredFullKeys(GetAtOrNegative(positions, minPos), subKeys[minPos], subResults[minPos], FullKeyComparer, out fullKeys))
             {
                 return false;
             }
@@ -247,16 +251,11 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return true;
             }
 
-            var it = partialKey.GetEnumerator();
-
             for (int i = 0; i < subResults.Count; i++)
             {
-                it.MoveNext();
-                var bag = it.Current;
-
                 if (i != minPos)
                 {
-                    if (!TryGetFilteredFullKeys(bag.position, bag.subkey, subResults[i], FullKeyComparer, out ISet<K> filteredSubResult))
+                    if (!TryGetFilteredFullKeys(GetAtOrNegative(positions, i), subKeys[i], subResults[i], FullKeyComparer, out ISet<K> filteredSubResult))
                     {
                         fullKeys = default(ISet<K>);
                         return false;
@@ -274,6 +273,12 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             return true;
         }
+
+        private int GetAtOrNegative(IList<int> positions, int pos)
+        {
+            return pos < positions.Count ? positions[pos] : -1;
+        }
+
 
         internal protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
         {
@@ -307,7 +312,6 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             return true;
         }
-
 
         #endregion
         #region single sub-key TryGet queries

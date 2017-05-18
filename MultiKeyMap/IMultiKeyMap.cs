@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -38,31 +37,34 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <summary>
         /// Gets all values  for which their full keys contain the partial key set in any order.
         /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for, wherein each sub-key is a Tuple of the position and the sub-key itself.
-        /// The negative position signifies non-positional sub-key to search anywhere within the full key, otherwise, its exact position within the full key. 
-        /// </param>
+        /// <param name="partialKey">The list of the sub-keys to search for.</param>
+        /// <param name="positions">The list of positions corresponding to the list of partialKey's sub-keys, wherein the negative position signifies non-positional 
+        /// sub-key to search for anywhere within the full key, otherwise, its exact position within the full key. The size of this list can be smaller than 
+        /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="values">A non-live non-empty sequence of the values satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetValuesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<V> values);
+        bool TryGetValuesByPartialKey(IList<T> partialKey, IList<int> positions, out ICollection<V> values);
 
         /// <summary>
         /// Gets all KeyValuePairs for which their full keys contain the partial key set in any order.
         /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for, wherein each sub-key is a Tuple of the position and the sub-key itself.
-        /// The negative position signifies non-positional sub-key to search anywhere within the full key, otherwise, its exact position within the full key. 
-        /// </param>
+        /// <param name="partialKey">The list of the sub-keys to search for.</param>
+        /// <param name="positions">The list of positions corresponding to the list of partialKey's sub-keys, wherein the negative position signifies non-positional 
+        /// sub-key to search for anywhere within the full key, otherwise, its exact position within the full key. The size of this list can be smaller than 
+        /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="entries">A non-live non-empty sequence of the KeyValuePair(-s) satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetEntriesByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ICollection<KeyValuePair<K, V>> entries);
+        bool TryGetEntriesByPartialKey(IList<T> partialKey, IList<int> positions, out ICollection<KeyValuePair<K, V>> entries);
 
         /// <summary>
         /// Gets all full keys that contain the partial key set in any order.
         /// </summary>
-        /// <param name="partialKey">The combination of the sub-keys to search for, wherein each sub-key is a Tuple of the position and the sub-key itself.
-        /// The negative position signifies non-positional sub-key to search anywhere within the full key, otherwise, its exact position within the full key. 
-        /// </param>
+        /// <param name="partialKey">The list of the sub-keys to search for.</param>
+        /// <param name="positions">The list of positions corresponding to the list of partialKey's sub-keys, wherein the negative position signifies non-positional 
+        /// sub-key to search for anywhere within the full key, otherwise, its exact position within the full key. The size of this list can be smaller than 
+        /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetFullKeysByPartialKey(IEnumerable<(int position, T subkey)> partialKey, out ISet<K> fullKeys);
+        bool TryGetFullKeysByPartialKey(IList<T> partialKey, IList<int> positions, out ISet<K> fullKeys);
     }
 }
