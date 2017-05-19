@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
@@ -15,10 +17,10 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
             return ToSetMultimap(map, EqualityComparer<V>.Default);
         }
 
-        private class LiteSetMultimap<K, V> : ILiteSetMultimap<K, V>
+        internal class LiteSetMultimap<K, V> : ILiteSetMultimap<K, V>
         {
-            private readonly IDictionary<K, ISet<V>> map;
-            private readonly IEqualityComparer<V> valueComparer;
+            protected readonly IDictionary<K, ISet<V>> map;
+            protected readonly IEqualityComparer<V> valueComparer;
 
             public LiteSetMultimap(IDictionary<K, ISet<V>> map, IEqualityComparer<V> valueComparer)
             {
@@ -26,17 +28,17 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
                 this.valueComparer = valueComparer;
             }
 
-            public void Clear()
+            public virtual void Clear()
             {
                 map.Clear();
             }
 
-            public bool TryGetValue(K key, out ISet<V> value)
+            public virtual bool TryGetValue(K key, out ISet<V> value)
             {
                 return map.TryGetValue(key, out value);
             }
 
-            public bool Add(K key, V value)
+            public virtual bool Add(K key, V value)
             {
                 if (map.TryGetValue(key, out ISet<V> col))
                 {
@@ -49,22 +51,30 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
                 return false;
             }
 
-            public bool Remove(K key, V value)
+            public virtual bool Remove(K key, V value)
+            {
+                return Remove(key, value, out bool removedEntireKey);
+            }
+
+            public virtual bool Remove(K key, V value, out bool removedEntireKey)
             {
                 if (map.TryGetValue(key, out ISet<V> col) && col.Remove(value))
                 {
                     if (col.Count == 0)
                     {
                         map.Remove(key);
+                        removedEntireKey = true;
                     }
 
+                    removedEntireKey = false;
                     return true;
                 }
 
+                removedEntireKey = false;
                 return false;
             }
 
-            public int Count
+            public virtual int Count
             {
                 get
                 {
@@ -72,7 +82,7 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
                 }
             }
 
-            public IEqualityComparer<V> ValueComparer => valueComparer;
+            public virtual IEqualityComparer<V> ValueComparer => valueComparer;
         }
     }
 
@@ -89,6 +99,7 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
         }
     }
 
+    [Serializable]
     internal class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : IEnumerable<T>
     {
         private IEqualityComparer<T> elementComparer;
@@ -109,6 +120,7 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
 
         public override int GetHashCode(K col)
         {
+            //return StructuralComparisons.StructuralEqualityComparer.GetHashCode(col);
             if (col == null)
             {
                 return 0;
@@ -125,6 +137,32 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
             }
 
             return hash;
+        }
+    }
+
+    internal static class BitArrayExtensions
+    {
+
+        public static void SetAndResize(this BitArray fields, int position, bool value)
+        {
+            if (position >= fields.Length)
+            {
+                fields.Length = position + 1;
+            }
+
+            fields.Set(position, value);
+        }
+
+        public static BitArray ToBitArray(this IList<int> list)
+        {
+            BitArray fields = new BitArray(32);
+
+            foreach (int field in list)
+            {
+                if (field >= 0) SetAndResize(fields, field, true);
+            }
+
+            return fields;
         }
     }
 }

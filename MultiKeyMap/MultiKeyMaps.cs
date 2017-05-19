@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 using GitHub.Protobufel.MultiKeyMap.Extensions;
 
@@ -20,10 +21,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <returns>The serializable instance of the Dictionary-based IMultiKeyMap implementation.</returns>
         public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>() where K : IEnumerable<T>
         {
-            //IDictionary<K, V> fullMap = new Dictionary<K, V>(EqualityComparer<T>.Default.EnumerableEqualityComparerOf<T, K>());
-            //IDictionary<T, ISet<K>> basePartMap = new Dictionary<T, ISet<K>>(EqualityComparer<T>.Default);
-            //return new BaseMultiKeyMap<T, K, V>(fullMap, basePartMap.ToSetMultimap());
-            return new DictionaryBaseMultiKeyMap<T, K, V>(EqualityComparer<T>.Default, EqualityComparer<K>.Default);
+            return new DictionaryBasePosMultiKeyMap<T, K, V>(EqualityComparer<T>.Default, EqualityComparer<T>.Default.EnumerableEqualityComparerOf<T, K>());
         }
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(IEqualityComparer<T> subKeyComparer,
             IEqualityComparer<K> fullKeyComparer) where K : IEnumerable<T>
         {
-            return new DictionaryBaseMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+            return new DictionaryBasePosMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
         }
     }
 }

@@ -8,6 +8,8 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         bool Remove(K key, V value);
 
+        bool Remove(K key, V value, out bool removedEntireKey);
+
         int Count { get; }
 
         bool TryGetValue(K key, out ISet<V> value);
