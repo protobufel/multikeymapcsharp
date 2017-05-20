@@ -14,6 +14,8 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         bool TryGetValue(K key, int position, out ISet<V> value, BitArray excludePositions = default(BitArray));
 
+        int TryGetAllValues(K key, out IEnumerable<ISet<V>> value, BitArray excludePositions = null);
+
         bool Add(K key, int position, V value);
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 using static GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions.LiteSetMultimapExtensions;
@@ -10,15 +12,10 @@ namespace GitHub.Protobufel.MultiKeyMap
         private readonly IDictionary<K, PosLiteSetMultimap<V>> map;
         private readonly IEqualityComparer<V> valueComparer;
 
-        public BasePosSetMultimap(IEqualityComparer<K> keyComparer, IEqualityComparer<V> valueComparer) 
-            : this(new Dictionary<K, PosLiteSetMultimap<V>>(keyComparer), valueComparer)
+        public BasePosSetMultimap(IEqualityComparer<K> keyComparer, IEqualityComparer<V> valueComparer, IDictionary<K, PosLiteSetMultimap<V>> map = null)
         {
-        }
-
-        public BasePosSetMultimap(IDictionary<K, PosLiteSetMultimap<V>> map, IEqualityComparer<V> valueComparer)
-        {
+            this.map = map ?? new Dictionary<K, PosLiteSetMultimap<V>>(keyComparer);
             this.valueComparer = valueComparer;
-            this.map = map;
         }
 
         internal protected virtual PosLiteSetMultimap<V> CreateLiteSetMultimap()
@@ -33,15 +30,23 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public virtual bool TryGetValue(K key, int position, out ISet<V> value, BitArray excludePositions = null)
         {
+            if (position < 0) throw new ArgumentOutOfRangeException("position");
+
             if (!map.TryGetValue(key, out PosLiteSetMultimap<V> liteMultimap))
             {
                 value = default(ISet<V>);
                 return false;
             }
 
-            if (position >= 0)
+            return liteMultimap.TryGetValue(position, out value);
+        }
+
+        public int TryGetAllValues(K key, out IEnumerable<ISet<V>> value, BitArray excludePositions = null)
+        {
+            if (!map.TryGetValue(key, out PosLiteSetMultimap<V> liteMultimap))
             {
-                return liteMultimap.TryGetValue(position, out value);
+                value = default(ICollection<ISet<V>>);
+                return 0;
             }
 
             return liteMultimap.TryGetAllValues(out value, excludePositions);
@@ -144,38 +149,39 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return base.TryGetValue(key, out value);
             }
 
-            public bool TryGetAllValues(out ISet<TValue> value, BitArray excludePositions = null)
+            public int TryGetAllValues(out IEnumerable<ISet<TValue>> value, BitArray excludePositions = null)
             {
-                value = default(ISet<TValue>);
+                value = default(IEnumerable<ISet<TValue>>);
 
                 if (Count == 0)
                 {
-                    return false;
+                    return 0;
                 }
 
-                bool first = true;
-                int i = 0;
-
-                foreach (var entry in map)
+                if (excludePositions == null)
                 {
-                    if ((excludePositions == null) || !excludePositions[i++])
-                    {
-                        if (first)
-                        {
-                            first = false;
-                            value = new HashSet<TValue>(entry.Value, ValueComparer);
-                        }
-                        else
-                        {
-                            value.UnionWith(entry.Value);
-                        }
-                    }
+                    value = map.Values;
+                    return map.Count;
                 }
 
-                return true;
+                value = map.Where(kv => !excludePositions[kv.Key]).Select(kv => kv.Value);
+
+                int count = 0;
+
+                foreach (var set in value)
+                {
+                    count += set.Count;
+                }
+
+                if (count == 0)
+                {
+                    value = default(IEnumerable<ISet<TValue>>);
+                }
+
+                return count;
             }
 
-            public BitArray Keys { get { BitArray result = new BitArray(fields); result.Length = Count; return result; } }
+            public BitArray Keys => new BitArray(fields);
         }
     }
 }

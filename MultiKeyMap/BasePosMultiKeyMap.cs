@@ -90,7 +90,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         protected static IList<T> AsList(IEnumerable<T> enumerable)
         {
-            return enumerable is IList<T> ? enumerable as IList<T> : new List<T>(enumerable);
+            return (enumerable as IList<T>) ?? new List<T>(enumerable);
         }
 
         #endregion
@@ -161,48 +161,82 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            IList<ISet<K>> subResults = new List<ISet<K>>();
+            IList<ISet<K>> sets = new List<ISet<K>>();
+            IList<IEnumerable<ISet<K>>> colSets = new List<IEnumerable<ISet<K>>>();
+
+            BitArray positionSet = positions.ToBitArray();
             int minSize = int.MaxValue;
-            int minPos = -1;
-            BitArray positionSet = positions.ToBitArray(); // which one to remove/use?
+            IEnumerable minSubResult = null;
 
             for (int i = 0; i < subKeys.Count; i++)
             {
-                if (!partMap.TryGetValue(subKeys[i], GetAtOrNegative(positions, i), out ISet<K> subResult, positionSet))
+                if ((i < positions.Count) && (positions[i] >= 0))
                 {
-                    fullKeys = default(ISet<K>);
-                    return false;
-                }
+                    if (!partMap.TryGetValue(subKeys[i], positions[i], out ISet<K> value, positionSet))
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
 
-                if (subResult.Count < minSize)
+                    if (value.Count < minSize)
+                    {
+                        minSize = value.Count;
+                        minSubResult = value;
+                    }
+
+                    sets.Add(value);
+                }
+                else
                 {
-                    minSize = subResult.Count;
-                    minPos = subResults.Count;
-                }
+                    int count = partMap.TryGetAllValues(subKeys[i], out IEnumerable<ISet<K>> value, positionSet);
 
-                subResults.Add(subResult);
+                    if (count == 0)
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
+
+                    if (count < minSize)
+                    {
+                        minSize = count;
+                        minSubResult = value;
+                    }
+
+                    colSets.Add(value);
+                }
             }
 
-            if (subResults.Count == 0)
-            {
-                fullKeys = default(ISet<K>);
-                return false;
-            }
+            HashSet<K> resultSet = ToSet<K>(minSubResult);
 
-            fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
-
-            if (subResults.Count == 1)
+            if ((sets.Count + colSets.Count) == 1)
             {
+                fullKeys = resultSet;
                 return true;
             }
 
-            for (int i = 0; i < subResults.Count; i++)
+            //prefer sets to colSets!
+            if (sets.Count > 0)
             {
-                if (i != minPos)
+                foreach (var set in sets)
                 {
-                    fullKeys.IntersectWith(subResults[i]);
+                    if (set != minSubResult) // check by reference!
+                    {
+                        resultSet.IntersectWith(set);
 
-                    if (fullKeys.Count == 0)
+                        if (resultSet.Count == 0)
+                        {
+                            fullKeys = default(ISet<K>);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (colSets.Count > 0)
+            {
+                foreach (var colSet in colSets)
+                {
+                    if ((colSet != minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
                     {
                         fullKeys = default(ISet<K>);
                         return false;
@@ -210,13 +244,66 @@ namespace GitHub.Protobufel.MultiKeyMap
                 }
             }
 
+            if (resultSet.Count == 0)
+            {
+                fullKeys = default(ISet<K>);
+                return false;
+            }
+
+            fullKeys = resultSet;
             return true;
         }
 
-        private int GetAtOrNegative(IList<int> positions, int pos)
+        protected virtual HashSet<E> ToSet<E>(IEnumerable source, IEqualityComparer<E> comparer = null)
         {
-            return (pos < positions.Count) ? positions[pos] : -1;
+            switch (source)
+            {
+                case ISet<E> set:
+                    return new HashSet<E>(set, comparer);
+                case IEnumerable<ISet<E>> colSet:
+                    HashSet<E> result = new HashSet<E>(comparer);
+
+                    foreach (var set in colSet)
+                    {
+                        result.UnionWith(set);
+                    }
+
+                    return result;
+                default:
+                    throw new InvalidOperationException("unknown source type");
+            }
         }
+
+        protected virtual bool IntersectWith<E>(HashSet<E> set, IEnumerable<ISet<E>> colSet)
+        {
+            if (set.Count == 0)
+            {
+                return false;
+            }
+
+            if (!colSet.Any())
+            {
+                set.Clear();
+                return false;
+            }
+
+            //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
+            set.RemoveWhere(e =>
+            {
+                foreach (var subSet in colSet)
+                {
+                    if (subSet.Contains(e))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            return (set.Count > 0);
+        }
+
         #endregion
 
         #region Implementation of the partial map helpers
