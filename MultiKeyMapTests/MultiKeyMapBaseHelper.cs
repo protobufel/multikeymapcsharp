@@ -34,9 +34,9 @@ namespace MultiKeyMapTests
             this.v2 = v2;
         }
 
-        public void Init()
+        public void Init(Func<IMultiKeyMap<T, K, V>> supplier = null)
         {
-            multiDict = Supplier.Invoke();
+            multiDict = (supplier ?? Supplier).Invoke();
             mirrorDict = new Dictionary<K, V>();
         }
 

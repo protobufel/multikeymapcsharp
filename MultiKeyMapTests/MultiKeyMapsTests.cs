@@ -14,8 +14,6 @@ namespace MultiKeyMapTests
     [TestClass]
     public class MultiKeyMapsTest
     {
-        //private Logger = new Logger()
-
         [TestInitialize]
         public void Init()
         {
@@ -196,23 +194,6 @@ namespace MultiKeyMapTests
 
             multiDict.Keys.ShouldAllBeEquivalentTo(ks, options => options.Using<IEnumerable<K>>(
                 ctx => ctx.Subject.Should().Equal(ctx.Expectation, (actual, expected) => fullKeyComparer.Equals(actual, expected))).WhenTypeIs<IEnumerable<K>>());
-
-
-            //multiDict.Should().NotBeEmpty().And.ContainKey(k).And.ContainValue(v).And.Contain(expectedEntry).And.HaveCount(1);
-
-            //bool result = multiDict.TryGetFullKeysByPartialKey(k, out var actualKeys);
-            //result.Should().BeTrue();
-            //actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, k);
-
-            //result = multiDict.TryGetValuesByPartialKey(k, out var actualValues);
-            //result.Should().BeTrue();
-            //actualValues.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
-
-            //result = multiDict.TryGetEntriesByPartialKey(k, out var actualEntries);
-            //result.Should().BeTrue();
-            //actualEntries.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
-
-            //return multiDict;
         }
     }
 }
