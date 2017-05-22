@@ -66,6 +66,50 @@ namespace MultiKeyMapTests
                 .And.HaveCount(0);
         }
 
+        public void AssertAddWithPositions()
+        {
+            K k = k1;
+            V v = v1;
+            KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
+            KeyValuePair<K, V> expectedEntry2 = new KeyValuePair<K, V>(k2, v2);
+
+            multiDict.Add(k, v, new bool[] { true, false });
+            multiDict.Should().NotBeEmpty().And.ContainKey(k).And.ContainValue(v).And.Contain(expectedEntry).And.HaveCount(1);
+
+            multiDict.Add(k2, v2, new bool[] { false, true, true });
+            multiDict.Should().NotBeEmpty().And.ContainKey(k2).And.ContainValue(v2).And.Contain(expectedEntry2).And.HaveCount(2);
+
+            bool result = multiDict.TryGetFullKeysByPartialKey(k, out var actualKeys);
+            result.Should().BeTrue();
+            actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, k);
+
+            result = multiDict.TryGetValuesByPartialKey(k, out var actualValues);
+            result.Should().BeTrue();
+            actualValues.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
+
+            result = multiDict.TryGetEntriesByPartialKey(k, out var actualEntries);
+            result.Should().BeTrue();
+            actualEntries.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
+
+            result = multiDict.TryGetFullKeysByPartialKey(k.ToList(), new int[] { 0, 1, -1 }, out var actualKeys2);
+            result.Should().BeTrue();
+            actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, k);
+
+            result = multiDict.TryGetEntriesByPartialKey(k.ToList(), new int[] { 0, 1, -1 }, out var actualEntries2);
+            result.Should().BeTrue();
+            actualEntries2.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, expectedEntry);
+
+            result = multiDict.TryGetValuesByPartialKey(k.ToList(), new int[] { 0, 1, -1}, out var actualValues2);
+            result.Should().BeTrue();
+            actualValues2.Should().NotBeNullOrEmpty().And.HaveCount(1).And.HaveElementAt(0, v);
+
+            result = multiDict.TryGetFullKeysByPartialKey(k2.Skip(1).ToList(), new int[] { 1, 2, -1 }, out var actualKeys3);
+            result.Should().BeTrue();
+            actualKeys.Should().NotBeNullOrEmpty().And.HaveCount(count => count >= 1);
+
+            //TODO: add more tests here!!!
+        }
+
         public void AssertAdd()
         {
             K k = k1;

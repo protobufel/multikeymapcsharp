@@ -43,53 +43,6 @@ namespace MultiKeyMapTests
                 true, false);
         }
 
-        //[TestInitialize]
-        //public void Init()
-        //{
-        //    helper1.Init();
-        //    helper2.Init();
-        //    helper3.Init();
-        //    helper4.Init();
-
-        //    helper1.Init(
-        //        new int[][]{
-        //            new int[]{ 1, 2, 3, 4 }, new int[] { 4, 3, 5 }, new int[] { 5, 1, 8 },
-        //            new int[] { 1, 2, 3, 4, 5, 6 }, new int[] { 30, -10 } },
-
-        //        new object[]{
-        //            new { A = 1, B = "hi" }, new { A = 1, B = "hi2" }, new { A = 1, B = "hi3" },
-        //            new { A = 1, B = "hi4" },new { A = 1, B = "hi5" }
-        //        });
-        //    helper2.Init(
-        //        new string[][]{
-        //            new string[]{ "1", "2", "3", "4" }, new string[] { "4", "3", "5" }, new string[] { "5", "1", "8" },
-        //            new string[] { "1", "2", "3", "4", "5", "6" }, new string[] { "30", "-10" } },
-
-        //        new long[]{
-        //            1, 2, 3, 4, 5
-        //        });
-        //    helper3.Init(
-        //       new List<Class1<string>>[] {
-        //           new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") },
-        //           new List<Class1<string>>() { GetClass1("C"), GetClass1("M"), GetClass1("a"), GetClass1("Y") },
-        //           new List<Class1<string>>() { GetClass1("d"), GetClass1("v"), GetClass1("Y"), GetClass1("M") }},
-
-        //           new string[] { "1", "2", "3" }
-        //        );
-        //    helper4.Init(
-        //        new List<ValueTuple<double>>[] {
-        //            new List<ValueTuple<double>>() { GetValueTuple(1.1), GetValueTuple(2.2), GetValueTuple(3.3) },
-        //            new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(4.0), GetValueTuple(5.5), GetValueTuple(2.2) },
-        //            new List<ValueTuple<double>>() { GetValueTuple(4.4), GetValueTuple(4.0), GetValueTuple(7.0), GetValueTuple(12.5) },
-        //            new List<ValueTuple<double>>() { GetValueTuple(3.3), GetValueTuple(-2.0), GetValueTuple(99.34) },
-        //        },
-        //        new bool[]
-        //        {
-        //            true,false,true, true
-        //        }
-        //        );
-        //}
-
         #region Data Test Initialization
 
         private MultiKeyMapBaseHelper<T, K, V> InitHelper<T, K, V>(K k1, K k2, V v1 = default(V), V v2 = default(V)) where K : IEnumerable<T>
@@ -235,6 +188,25 @@ namespace MultiKeyMapTests
             helper2.AssertAdd();
             helper3.AssertAdd();
             helper4.AssertAdd();
+        }
+
+        [DataTestMethod]
+        [DataRow(OptimizedForPositionalSearch, BothNull)]
+        [DataRow(OptimizedForPositionalSearch, BothDefault)]
+        [DataRow(OptimizedForPositionalSearch, StructuralBoth)]
+        [DataRow(OptimizedForPositionalSearch, StructuralFullKeyOnly)]
+        [DataRow(OptimizedForNonPositionalSearch, BothNull)]
+        [DataRow(OptimizedForNonPositionalSearch, BothDefault)]
+        [DataRow(OptimizedForNonPositionalSearch, StructuralBoth)]
+        [DataRow(OptimizedForNonPositionalSearch, StructuralFullKeyOnly)]
+        public void AddAddWithPositionsTest(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
+        {
+            InitAll(strategy, compStrategy);
+
+            helper1.AssertAddWithPositions();
+            helper2.AssertAddWithPositions();
+            helper3.AssertAddWithPositions();
+            helper4.AssertAddWithPositions();
         }
 
         [DataTestMethod]

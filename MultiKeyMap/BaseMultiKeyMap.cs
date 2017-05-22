@@ -399,13 +399,19 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public virtual bool IsReadOnly => fullMap.IsReadOnly;
 
+        public virtual void Add(K key, V value, IEnumerable<bool> positions)
+        {
+            if (positions == null) throw new ArgumentNullException("positions"); 
+            Add(key, value);
+        }
+
         public virtual void Add(K key, V value)
         {
             fullMap.Add(key, value);
             AddPartial(key);
         }
 
-        public virtual void Add(KeyValuePair<K, V> item)
+        void ICollection<KeyValuePair<K, V>>.Add(KeyValuePair<K, V> item)
         {
             fullMap.Add(item);
             AddPartial(item.Key);

@@ -153,13 +153,27 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
             fields.Set(position, value);
         }
 
-        public static BitArray ToBitArray(this IList<int> list)
+        public static BitArray ToBitArray(this IEnumerable<int> list)
         {
             BitArray fields = new BitArray(32);
 
             foreach (int field in list)
             {
                 if (field >= 0) SetAndResize(fields, field, true);
+            }
+
+            return fields;
+        }
+
+        public static BitArray ToBitArray(this IEnumerable<bool> list)
+        {
+            BitArray fields = new BitArray(32);
+
+            int i = 0;
+
+            foreach (bool field in list)
+            {
+                SetAndResize(fields, i++, field);
             }
 
             return fields;

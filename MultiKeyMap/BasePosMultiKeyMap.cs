@@ -219,7 +219,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             {
                 foreach (var set in sets)
                 {
-                    if (set != minSubResult) // check by reference!
+                    if (!ReferenceEquals(set,minSubResult)) // check by reference!
                     {
                         resultSet.IntersectWith(set);
 
@@ -236,7 +236,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             {
                 foreach (var colSet in colSets)
                 {
-                    if ((colSet != minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
+                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
                     {
                         fullKeys = default(ISet<K>);
                         return false;
@@ -352,6 +352,12 @@ namespace GitHub.Protobufel.MultiKeyMap
         public virtual int Count => fullMap.Count;
 
         public virtual bool IsReadOnly => fullMap.IsReadOnly;
+
+        public virtual void Add(K key, V value, IEnumerable<bool> positions)
+        {
+            if (positions == null) throw new ArgumentNullException("positions");
+            Add(key, value);
+        }
 
         public virtual void Add(K key, V value)
         {

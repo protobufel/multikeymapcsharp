@@ -46,7 +46,8 @@ namespace GitHub.Protobufel.MultiKeyMap
                 case MultiKeyCreationStrategy.OptimizedForNonPositionalSearch:
                     return new DictionaryBaseMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 case MultiKeyCreationStrategy.OptimizedForPositionalSearch:
-                    return new DictionaryBasePosMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+                    // return new DictionaryBasePosMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer); // deprecated!
+                    return new DictionaryBasePosMaskMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 default:
                     throw new ArgumentOutOfRangeException("creationStrategy");
             }
