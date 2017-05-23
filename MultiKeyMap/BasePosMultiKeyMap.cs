@@ -9,6 +9,8 @@ namespace GitHub.Protobufel.MultiKeyMap
     [Serializable]
     internal abstract class BasePosMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
+        private const float CostRatioOfNewJoinOp = 2.0F;
+
         internal protected IDictionary<K, V> fullMap;
         [NonSerialized]
         internal protected IPosSetMultimap<T, K> partMap;
@@ -219,7 +221,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             {
                 foreach (var set in sets)
                 {
-                    if (!ReferenceEquals(set,minSubResult)) // check by reference!
+                    if (!ReferenceEquals(set, minSubResult)) // check by reference!
                     {
                         resultSet.IntersectWith(set);
 
@@ -276,32 +278,72 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         protected virtual bool IntersectWith<E>(HashSet<E> set, IEnumerable<ISet<E>> colSet)
         {
-            if (set.Count == 0)
+            if ((set.Count == 0) || !colSet.Any())
             {
                 return false;
             }
 
-            if (!colSet.Any())
+            if (IsJoinMoreExpensive(set, colSet, CostRatioOfNewJoinOp))
             {
-                set.Clear();
-                return false;
-            }
-
-            //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
-            set.RemoveWhere(e =>
-            {
-                foreach (var subSet in colSet)
+                //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
+                set.RemoveWhere(e =>
                 {
-                    if (subSet.Contains(e))
+                    foreach (var subSet in colSet)
                     {
-                        return false;
+                        if (subSet.Contains(e))
+                        {
+                            return false;
+                        }
                     }
-                }
 
-                return true;
-            });
+                    return true;
+                });
+            }
+            else
+            {
+                if (!TryJoinSets(colSet, out ISet<E> joinedSet))
+                {
+                    set.Clear();
+                    return false;
+                }
+            }
 
             return (set.Count > 0);
+        }
+
+        private bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
+        {
+            long secondSize = 0;
+            int secondCount = 0;
+
+            foreach (var col in second)
+            {
+                secondSize += col.Count;
+                secondCount++;
+            }
+
+            return (CostRatioOfNewJoinOp * secondSize) > ((first.Count - 1) * secondCount);
+        }
+
+        private bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
+        {
+            bool first = true;
+            result = null;
+
+            foreach (var set in sets)
+            {
+                if (first)
+                {
+                    first = false;
+                    result = new HashSet<E>(set);
+                }
+                else
+                {
+                    result.UnionWith(set);
+                }
+            }
+
+            return (result != null) && (result.Count > 0);
         }
 
         #endregion
@@ -365,7 +407,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             AddPartial(key);
         }
 
-        public virtual void Add(KeyValuePair<K, V> item)
+        void ICollection<KeyValuePair<K, V>>.Add(KeyValuePair<K, V> item)
         {
             fullMap.Add(item);
             AddPartial(item.Key);
