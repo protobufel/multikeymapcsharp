@@ -13,14 +13,13 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>1.Added the creation strategy (choice) of the positionaly or non-positionaly optimized MultiKeyMap, avalable as the optional parameter in MultiKeyMaps.CreateMultiKeyDictionary methods. By default, it's non-positional.
-2. New positional strategy allows for the effective search and the addition for both positional and non-positional sub-keys.</PackageReleaseNotes>
+    <PackageReleaseNotes>Positional and non-positional optimizations work best for their cases, both having cons against each other, being  roughly M times slower aginst the "other" case, where M is the average size/count of a full key collection with regard to its sub-keys. Also, the non-positional algorithm takes less space. And set as the default strategy.</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>3.0.10.0</AssemblyVersion>
-    <FileVersion>3.0.10.0</FileVersion>
-    <Version>3.0.10</Version>
+    <AssemblyVersion>3.0.15.0</AssemblyVersion>
+    <FileVersion>3.0.15.0</FileVersion>
+    <Version>3.0.15</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
