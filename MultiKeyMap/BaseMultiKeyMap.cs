@@ -420,6 +420,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         public virtual void Clear()
         {
             fullMap.Clear();
+            partMap.Clear();
         }
 
         public virtual bool Contains(KeyValuePair<K, V> item)
