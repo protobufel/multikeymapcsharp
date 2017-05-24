@@ -139,44 +139,4 @@ namespace GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions
             return hash;
         }
     }
-
-    internal static class BitArrayExtensions
-    {
-
-        public static void SetAndResize(this BitArray fields, int position, bool value)
-        {
-            if (position >= fields.Length)
-            {
-                fields.Length = position + 1;
-            }
-
-            fields.Set(position, value);
-        }
-
-        public static BitArray ToBitArray(this IEnumerable<int> list)
-        {
-            BitArray fields = new BitArray(32);
-
-            foreach (int field in list)
-            {
-                if (field >= 0) SetAndResize(fields, field, true);
-            }
-
-            return fields;
-        }
-
-        public static BitArray ToBitArray(this IEnumerable<bool> list)
-        {
-            BitArray fields = new BitArray(32);
-
-            int i = 0;
-
-            foreach (bool field in list)
-            {
-                SetAndResize(fields, i++, field);
-            }
-
-            return fields;
-        }
-    }
 }

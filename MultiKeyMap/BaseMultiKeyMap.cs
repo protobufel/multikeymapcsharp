@@ -28,6 +28,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected internal virtual IEqualityComparer<T> SubKeyComparer => subKeyComparer;
 
         #region non-positional TryGetsByPartialKey
+
         public virtual bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values)
         {
             if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
@@ -374,6 +375,12 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
+
+        internal protected virtual void ClearPartial()
+        {
+                partMap.Clear();
+        }
+
         #endregion
 
         public virtual V this[K key]
@@ -401,7 +408,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public virtual void Add(K key, V value, IEnumerable<bool> positions)
         {
-            if (positions == null) throw new ArgumentNullException("positions"); 
+            if (positions == null) throw new ArgumentNullException("positions");
             Add(key, value);
         }
 
@@ -420,9 +427,10 @@ namespace GitHub.Protobufel.MultiKeyMap
         public virtual void Clear()
         {
             fullMap.Clear();
+            ClearPartial();
         }
 
-        public virtual bool Contains(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Contains(KeyValuePair<K, V> item)
         {
             return fullMap.Contains(item);
         }
@@ -432,7 +440,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return fullMap.ContainsKey(key);
         }
 
-        public virtual void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
             fullMap.CopyTo(array, arrayIndex);
         }
@@ -448,7 +456,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public virtual bool Remove(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Remove(KeyValuePair<K, V> item)
         {
             if (fullMap.Remove(item))
             {

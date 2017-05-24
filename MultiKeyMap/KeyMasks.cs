@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -264,10 +264,69 @@ namespace GitHub.Protobufel.MultiKeyMap
         }
 
         #endregion
+    }
+
+    internal static class BitArrayExtensions
+    {
 
         public static bool TryGet(this BitArray mask, int index)
         {
             return (index >= 0) && (index < mask.Length) && mask.Get(index);
+        }
+
+        public static void SetAndResize(this BitArray fields, int position, bool value)
+        {
+            if (position >= fields.Length)
+            {
+                fields.Length = position + 1;
+            }
+
+            fields.Set(position, value);
+        }
+
+        public static BitArray ToBitArray(this IEnumerable<int> list)
+        {
+            BitArray fields = new BitArray(32);
+
+            foreach (int field in list)
+            {
+                if (field >= 0) SetAndResize(fields, field, true);
+            }
+
+            return fields;
+        }
+
+        public static BitArray ToBitArray(this IEnumerable<bool> list)
+        {
+            switch (list)
+            {
+                case bool[] boolArray:
+                    return new BitArray(boolArray);
+                default:
+                    BitArray fields = new BitArray(list.Count());
+
+                    int i = 0;
+
+                    foreach (bool field in list)
+                    {
+                        fields.Set(i++, field);
+                    }
+
+                    return fields;
+            }
+        }
+
+        public static bool IsFalse(this BitArray mask)
+        {
+            foreach (bool item in mask)
+            {
+                if (item)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

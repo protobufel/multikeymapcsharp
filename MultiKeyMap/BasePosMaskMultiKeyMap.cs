@@ -16,6 +16,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         internal BasePosMaskMultiKeyMap(IMultiKeyMap<ISubKeyMask<T>, IKeyMask<T, K>, V> map)
         {
             this.map = map ?? throw new ArgumentNullException("map");
+            this.map.Clear();
         }
 
         public virtual V this[K key] { get => map[key.ToKeyMask<T, K>()]; set => map[key.ToKeyMask<T, K>()] = value; }
