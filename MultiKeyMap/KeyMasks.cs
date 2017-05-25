@@ -9,7 +9,7 @@ namespace GitHub.Protobufel.MultiKeyMap
     // It is a space saver, but more trouble in code.
     internal interface IKeyMask<T, K> : IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : IEnumerable<T>
     {
-        K Key { get;}
+        K Key { get; }
         BitArray Positions { get; }
     }
 
@@ -94,7 +94,8 @@ namespace GitHub.Protobufel.MultiKeyMap
                 {
                     yield return new SubKeyMask<T>(subKey);
                 }
-            } else
+            }
+            else
             {
                 int i = 0;
 
@@ -103,7 +104,8 @@ namespace GitHub.Protobufel.MultiKeyMap
                     if (Positions.TryGet(i++))
                     {
                         yield return new SubKeyMask<T>(subKey, i);
-                    } else
+                    }
+                    else
                     {
                         yield return new SubKeyMask<T>(subKey);
                     }
@@ -238,7 +240,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public static IEqualityComparer<IKeyMask<T, K>> ToKeyMaskComparer<T, K>(this IEqualityComparer<K> keyComparer) where K : IEnumerable<T> 
+        public static IEqualityComparer<IKeyMask<T, K>> ToKeyMaskComparer<T, K>(this IEqualityComparer<K> keyComparer) where K : IEnumerable<T>
         {
             return new KeyMaskComparer<T, K>(keyComparer);
         }
@@ -274,14 +276,18 @@ namespace GitHub.Protobufel.MultiKeyMap
             return (index >= 0) && (index < mask.Length) && mask.Get(index);
         }
 
-        public static void SetAndResize(this BitArray fields, int position, bool value)
+        public static int SetAndResize(this BitArray fields, int position, bool value)
         {
             if (position >= fields.Length)
             {
                 fields.Length = position + 1;
+                fields.Set(position, value);
+                return value ? 1 : 0;
             }
 
+            int result = (value == fields.Get(position)) ? 0 : (value ? 1 : -1);
             fields.Set(position, value);
+            return result;
         }
 
         public static BitArray ToBitArray(this IEnumerable<int> list)
@@ -327,6 +333,198 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
 
             return true;
+        }
+
+        private static bool IsFalse2(this BitArray mask)
+        {
+            int[] array = new int[mask.Length / 32 + 1];
+
+            (mask as ICollection).CopyTo(array, 0);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static ushort GetTrueCount(this BitArray mask)
+        {
+            ushort count = 0;
+
+            foreach (var item in mask)
+            {
+                if ((bool)item)
+                {
+                    checked
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+    }
+
+    interface IBitList : IEnumerable<bool>, IEnumerable
+    {
+        bool this[int index] { get; set; }
+        ushort CountTrue { get; }
+        ushort Length { get; set; }
+        BitList And(BitList value);
+        bool Get(int index);
+        bool TryGet(int index);
+        BitList Not();
+        BitList Or(BitList value);
+        BitList Set(int index, bool value);
+        BitList SetAll(bool value);
+        BitList Xor(BitList value);
+        BitList Clear();
+        BitArray ToBitArray();
+    }
+
+    internal class BitList : IBitList
+    {
+        private readonly BitArray bits;
+
+        public ushort CountTrue { get; private set; }
+
+        public ushort Length
+        {
+            get { return (ushort)bits.Length; }
+            set { bits.Length = value; }
+        }
+
+        public bool this[int index] { get => bits.TryGet(index); set => bits.SetAndResize(index, value); }
+
+        public BitList() : this(0)
+        {
+        }
+
+        public BitList(BitArray bits)
+        {
+            this.bits = new BitArray(bits);
+        }
+
+        public BitList(IBitList bitList)
+        {
+            bits = bitList.ToBitArray();
+            CountTrue = bitList.CountTrue;
+        }
+
+        public BitList(int length)
+        {
+            bits = new BitArray(length);
+            CountTrue = 0;
+        }
+
+        public BitList(bool[] values)
+        {
+            bits = new BitArray(values);
+            CountTrue = bits.GetTrueCount();
+        }
+
+        public BitList(byte[] bytes)
+        {
+            bits = new BitArray(bytes);
+            CountTrue = bits.GetTrueCount();
+        }
+
+        public BitList(int[] values)
+        {
+            bits = new BitArray(values);
+            CountTrue = bits.GetTrueCount();
+        }
+
+        public BitList(int length, bool defaultValue)
+        {
+            bits = new BitArray(length, defaultValue);
+            CountTrue = defaultValue ? Length : (ushort)0;
+        }
+
+        public bool Get(int index)
+        {
+            return bits.Get(index);
+        }
+
+        public bool TryGet(int index)
+        {
+            return bits.TryGet(index);
+        }
+
+        public BitList And(BitList value)
+        {
+            bits.And(value.bits);
+            CountTrue = bits.GetTrueCount();
+            return this;
+        }
+
+        public BitList Not()
+        {
+            bits.Not();
+            CountTrue = (ushort)(Length - CountTrue);
+            return this;
+        }
+
+        public BitList Or(BitList value)
+        {
+            bits.Or(value.bits);
+            CountTrue = bits.GetTrueCount();
+            return this;
+        }
+
+        public BitList Xor(BitList value)
+        {
+            bits.Xor(value.bits);
+            CountTrue = bits.GetTrueCount();
+            return this;
+        }
+
+        public BitList SetAll(bool value)
+        {
+            bits.SetAll(value);
+            CountTrue = value ? Length : (ushort)0;
+            return this;
+        }
+
+        public BitList Set(int index, bool value)
+        {
+            CountTrue = (ushort)(CountTrue + bits.SetAndResize(index, value));
+            return this;
+        }
+
+        public BitList Clear()
+        {
+            bits.Length = 0;
+            return this;
+        }
+
+        public IEnumerator<bool> GetEnumerator()
+        {
+            foreach (var item in bits)
+            {
+                yield return (bool)item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            return bits.ToString();
+        }
+
+        public BitArray ToBitArray()
+        {
+            return new BitArray(bits);
         }
     }
 }

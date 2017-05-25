@@ -19,9 +19,8 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected abstract bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask);
         protected abstract bool RemoveSubKeyPosition(ISubKeyMask<T> subKeyMask, out bool removedEntireSubKey);
         protected abstract bool IsSubKeyPosition(ISubKeyMask<T> subKeyMask);
-        protected abstract bool TryGetPositions(T subKey, out BitArray positionMask);
+        protected abstract bool TryGetPositions(T subKey, out IBitList positionMask);
         protected abstract void ClearSubKeyPositions();
-
 
         protected virtual bool RegisterSubKeyPosition(ISubKeyMask<T> subKeyMask)
         {

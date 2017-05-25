@@ -13,13 +13,13 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>Positional and non-positional optimizations work best for their cases, both having cons against each other, being  roughly M times slower aginst the "other" case, where M is the average size/count of a full key collection with regard to its sub-keys. Also, the non-positional algorithm takes less space. And set as the default strategy.</PackageReleaseNotes>
+    <PackageReleaseNotes>Finished BitList and MaskMultiKeyMap</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>3.0.15.0</AssemblyVersion>
-    <FileVersion>3.0.15.0</FileVersion>
-    <Version>3.0.15</Version>
+    <AssemblyVersion>3.0.20.0</AssemblyVersion>
+    <FileVersion>3.0.20.0</FileVersion>
+    <Version>3.0.20</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace GitHub.Protobufel.MultiKeyMap
@@ -8,25 +7,25 @@ namespace GitHub.Protobufel.MultiKeyMap
     internal abstract class MaskMultiKeyMap<T, K, V> : BaseMaskMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
         [NonSerialized]
-        protected readonly IDictionary<T, BitArray> subKeyPositions;
+        protected readonly IDictionary<T, IBitList> subKeyPositions;
 
         public MaskMultiKeyMap(IEqualityComparer<ISubKeyMask<T>> subKeyComparer, IEqualityComparer<IKeyMask<T, K>> fullKeyComparer,
-            IDictionary<IKeyMask<T, K>, V> fullMap, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap, IDictionary<T, BitArray> subKeyPositions = null)
+            IDictionary<IKeyMask<T, K>, V> fullMap, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap, IDictionary<T, IBitList> subKeyPositions = null)
             : base(subKeyComparer, fullKeyComparer, fullMap, partMap)
         {
-            this.subKeyPositions = subKeyPositions ?? new Dictionary<T, BitArray>();
+            this.subKeyPositions = subKeyPositions ?? new Dictionary<T, IBitList>();
         }
 
         protected override bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask)
         {
-            if (subKeyPositions.TryGetValue(subKeyMask.SubKey, out var positionMask))
+            if (subKeyPositions.TryGetValue(subKeyMask.SubKey, out IBitList positionMask))
             {
-                positionMask.SetAndResize(subKeyMask.Position, true);
+                positionMask.Set(subKeyMask.Position, true);
                 return false;
             }
             else
             {
-                positionMask = new BitArray(subKeyMask.Position);
+                positionMask = new BitList(subKeyMask.Position);
                 positionMask.Set(subKeyMask.Position, true);
                 subKeyPositions.Add(subKeyMask.SubKey, positionMask);
                 return true;
@@ -49,9 +48,9 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             if (subKeyPositions.TryGetValue(subKeyMask.SubKey, out var positionMask))
             {
-                positionMask.SetAndResize(subKeyMask.Position, false);
+                positionMask.Set(subKeyMask.Position, false);
 
-                if (positionMask.IsFalse())
+                if (positionMask.CountTrue == 0)
                 {
                     subKeyPositions.Remove(subKeyMask.SubKey);
                     removedEntireSubKey = true;
@@ -63,15 +62,15 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        protected override bool TryGetPositions(T subKey, out BitArray positionMask)
+        protected override bool TryGetPositions(T subKey, out IBitList positionMask)
         {
             if (subKeyPositions.TryGetValue(subKey, out positionMask))
             {
-                positionMask = new BitArray(positionMask);
+                positionMask = new BitList(positionMask);
                 return true;
             }
 
-            positionMask = default(BitArray);
+            positionMask = default(IBitList);
             return false;
         }
     }
