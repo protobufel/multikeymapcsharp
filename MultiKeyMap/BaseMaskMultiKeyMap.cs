@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -58,6 +56,24 @@ namespace GitHub.Protobufel.MultiKeyMap
         {
             base.ClearPartial();
             ClearSubKeyPositions();
+        }
+
+        #endregion
+
+        #region Filtered Queries Overrides
+
+        /// <summary>
+        /// Defers to the base class implementation without positions, wherein positions are already embedded in the <paramref name="subKeys"/>.
+        /// </summary>
+        /// <param name="subKeys">The sequence of <see cref="ISubKeyMask{T}"/> each already having (subKey, position) combination 
+        /// sufficient for the positioned search</param>
+        /// <param name="positions">not needed here, set to it to <c>null</c></param>
+        /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of
+        /// the result type if not found.</param>
+        /// <returns>true if the partial key is found, false otherwise.</returns>
+        public override bool TryGetFullKeysByPartialKey(IList<ISubKeyMask<T>> subKeys, IList<int> positions, out ISet<IKeyMask<T, K>> fullKeys)
+        {
+            return base.TryGetFullKeysByPartialKey(subKeys, out fullKeys);
         }
 
         #endregion
