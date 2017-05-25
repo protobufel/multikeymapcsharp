@@ -237,7 +237,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            if (minPos < 0)
+            if (GetAtOrNegative(positions, minPos) < 0)
             {
                 fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
@@ -283,16 +283,16 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         internal protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
         {
-            if (position < 0)
-            {
-                target = source;
-                return true;
-            }
-
             if (source.Count == 0)
             {
                 target = default(ISet<K>);
                 return false;
+            }
+
+            if (position < 0)
+            {
+                target = source;
+                return true;
             }
 
             target = new HashSet<K>(comparer);
