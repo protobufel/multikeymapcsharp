@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -15,13 +17,29 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
-        internal BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
-            IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
+        protected BaseMultiKeyMap() { }
+
+        protected BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
+            IDictionary<K, V> fullMap = null, ILiteSetMultimap<T, K> partMap = null)
         {
-            this.fullMap = fullMap ?? throw new ArgumentNullException("fullMap");
-            this.partMap = partMap ?? throw new ArgumentNullException("partMap");
-            this.subKeyComparer = subKeyComparer ?? throw new ArgumentNullException("subKeyComparer");
-            this.fullKeyComparer = fullKeyComparer ?? throw new ArgumentNullException("fullKeyComparer");
+            this.subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
+            this.fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
+            this.fullMap = fullMap ?? CreateDictionary<K, V>(fullKeyComparer);
+            this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
+        }
+
+        protected abstract IDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer);
+
+        protected virtual IDictionary<TKey, TValue> CreateSupportDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer)
+        {
+            return CreateDictionary<TKey, TValue>(comparer);
+        }
+
+        protected virtual ILiteSetMultimap<TSubKey, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
+            IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
+            where TKey : IEnumerable<TSubKey>
+        {
+            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
         }
 
         protected internal virtual IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
@@ -480,6 +498,18 @@ namespace GitHub.Protobufel.MultiKeyMap
         IEnumerator IEnumerable.GetEnumerator()
         {
             return fullMap.GetEnumerator();
+        }
+
+        protected virtual void OnDeserializedHelper(StreamingContext context)
+        {
+            (fullMap as IDeserializationCallback).OnDeserialization(null);
+
+            partMap = CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
+
+            foreach (var entry in fullMap)
+            {
+                AddPartial(entry.Key);
+            }
         }
     }
 }

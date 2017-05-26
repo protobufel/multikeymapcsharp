@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using static GitHub.Protobufel.MultiKeyMap.KeyMaskExtensions;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -7,13 +9,15 @@ namespace GitHub.Protobufel.MultiKeyMap
     internal abstract class MaskMultiKeyMap<T, K, V> : BaseMaskMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
         [NonSerialized]
-        protected readonly IDictionary<T, IBitList> subKeyPositions;
+        protected IDictionary<T, IBitList> subKeyPositions;
 
-        public MaskMultiKeyMap(IEqualityComparer<ISubKeyMask<T>> subKeyComparer, IEqualityComparer<IKeyMask<T, K>> fullKeyComparer,
-            IDictionary<IKeyMask<T, K>, V> fullMap, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap, IDictionary<T, IBitList> subKeyPositions = null)
-            : base(subKeyComparer, fullKeyComparer, fullMap, partMap)
+        protected MaskMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
+            IDictionary<IKeyMask<T, K>, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap = null)
+            : base((subKeyComparer ?? EqualityComparer<T>.Default).ToSubKeyMaskComparer(),
+                  (fullKeyComparer ?? EqualityComparer<K>.Default).ToKeyMaskComparer<T, K>(), 
+                  fullMap, partMap)
         {
-            this.subKeyPositions = subKeyPositions ?? new Dictionary<T, IBitList>();
+            subKeyPositions = CreateSupportDictionary<T, IBitList>(OriginalSubKeyComparer);
         }
 
         protected override bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask)
@@ -72,6 +76,15 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             positionMask = default(IBitList);
             return false;
+        }
+
+        protected virtual IEqualityComparer<T> OriginalSubKeyComparer => (subKeyComparer as SubKeyMaskComparer<T>).SubKeyComparer;
+        protected virtual IEqualityComparer<K> OriginalFullKeyComparer => (fullKeyComparer as KeyMaskComparer<T, K>).KeyComparer;
+
+        protected override void OnDeserializedHelper(StreamingContext context)
+        {
+            subKeyPositions = CreateSupportDictionary<T, IBitList>(OriginalSubKeyComparer);
+            base.OnDeserializedHelper(context);
         }
     }
 }

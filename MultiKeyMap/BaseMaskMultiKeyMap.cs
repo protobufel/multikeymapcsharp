@@ -6,8 +6,8 @@ namespace GitHub.Protobufel.MultiKeyMap
     [Serializable]
     internal abstract class BaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<ISubKeyMask<T>, IKeyMask<T, K>, V> where K : IEnumerable<T>
     {
-        public BaseMaskMultiKeyMap(IEqualityComparer<ISubKeyMask<T>> subKeyComparer, IEqualityComparer<IKeyMask<T, K>> fullKeyComparer,
-            IDictionary<IKeyMask<T, K>, V> fullMap, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap)
+        protected BaseMaskMultiKeyMap(IEqualityComparer<ISubKeyMask<T>> subKeyComparer, IEqualityComparer<IKeyMask<T, K>> fullKeyComparer,
+            IDictionary<IKeyMask<T, K>, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap = null)
             : base(subKeyComparer, fullKeyComparer, fullMap, partMap)
         {
         }
