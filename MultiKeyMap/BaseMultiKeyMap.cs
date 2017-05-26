@@ -236,7 +236,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            if (minPos < 0)
+            if (GetAtOrNegative(positions, minPos) < 0)
             {
                 fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
