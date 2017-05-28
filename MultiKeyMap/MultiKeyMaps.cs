@@ -41,13 +41,16 @@ namespace GitHub.Protobufel.MultiKeyMap
         public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
             MultiKeyCreationStrategy creationStrategy = MultiKeyCreationStrategy.OptimizedForNonPositionalSearch) where K : IEnumerable<T>
         {
+            if (subKeyComparer == null) throw new ArgumentNullException("subKeyComparer");
+            if (fullKeyComparer == null) throw new ArgumentNullException("fullKeyComparer");
+
             switch (creationStrategy)
             {
                 case MultiKeyCreationStrategy.OptimizedForNonPositionalSearch:
                     return new DictionaryBaseMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 case MultiKeyCreationStrategy.OptimizedForPositionalSearch:
-                    return new DictionaryBasePosMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
-                    // return new DictionaryBasePosMaskMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+                    return EnumerableExtensions.CreateDictionaryPositionOptimizedMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+                // return new DictionaryBasePosMaskMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 default:
                     throw new ArgumentOutOfRangeException("creationStrategy");
             }

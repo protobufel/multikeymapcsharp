@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -15,19 +17,36 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
-        internal BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
-            IDictionary<K, V> fullMap, ILiteSetMultimap<T, K> partMap)
+        protected BaseMultiKeyMap() { }
+
+        protected BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
+            IDictionary<K, V> fullMap = null, ILiteSetMultimap<T, K> partMap = null)
         {
-            this.fullMap = fullMap ?? throw new ArgumentNullException("fullMap");
-            this.partMap = partMap ?? throw new ArgumentNullException("partMap");
-            this.subKeyComparer = subKeyComparer ?? throw new ArgumentNullException("subKeyComparer");
-            this.fullKeyComparer = fullKeyComparer ?? throw new ArgumentNullException("fullKeyComparer");
+            this.subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
+            this.fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
+            this.fullMap = fullMap ?? CreateDictionary<K, V>(fullKeyComparer);
+            this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
+        }
+
+        protected abstract IDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer);
+
+        protected virtual IDictionary<TKey, TValue> CreateSupportDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer)
+        {
+            return CreateDictionary<TKey, TValue>(comparer);
+        }
+
+        protected virtual ILiteSetMultimap<TSubKey, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
+            IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
+            where TKey : IEnumerable<TSubKey>
+        {
+            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
         }
 
         protected internal virtual IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
         protected internal virtual IEqualityComparer<T> SubKeyComparer => subKeyComparer;
 
         #region non-positional TryGetsByPartialKey
+
         public virtual bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values)
         {
             if (!TryGetFullKeysByPartialKey(partialKey, out ISet<K> fullKeys))
@@ -282,16 +301,16 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         internal protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
         {
-            if (position < 0)
-            {
-                target = source;
-                return true;
-            }
-
             if (source.Count == 0)
             {
                 target = default(ISet<K>);
                 return false;
+            }
+
+            if (position < 0)
+            {
+                target = source;
+                return true;
             }
 
             target = new HashSet<K>(comparer);
@@ -374,6 +393,12 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
+
+        internal protected virtual void ClearPartial()
+        {
+                partMap.Clear();
+        }
+
         #endregion
 
         public virtual V this[K key]
@@ -401,7 +426,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public virtual void Add(K key, V value, IEnumerable<bool> positions)
         {
-            if (positions == null) throw new ArgumentNullException("positions"); 
+            if (positions == null) throw new ArgumentNullException("positions");
             Add(key, value);
         }
 
@@ -420,10 +445,10 @@ namespace GitHub.Protobufel.MultiKeyMap
         public virtual void Clear()
         {
             fullMap.Clear();
-            partMap.Clear();
+            ClearPartial();
         }
 
-        public virtual bool Contains(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Contains(KeyValuePair<K, V> item)
         {
             return fullMap.Contains(item);
         }
@@ -433,7 +458,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return fullMap.ContainsKey(key);
         }
 
-        public virtual void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
             fullMap.CopyTo(array, arrayIndex);
         }
@@ -449,7 +474,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public virtual bool Remove(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Remove(KeyValuePair<K, V> item)
         {
             if (fullMap.Remove(item))
             {
@@ -473,6 +498,18 @@ namespace GitHub.Protobufel.MultiKeyMap
         IEnumerator IEnumerable.GetEnumerator()
         {
             return fullMap.GetEnumerator();
+        }
+
+        protected virtual void OnDeserializedHelper(StreamingContext context)
+        {
+            (fullMap as IDeserializationCallback).OnDeserialization(null);
+
+            partMap = CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
+
+            foreach (var entry in fullMap)
+            {
+                AddPartial(entry.Key);
+            }
         }
     }
 }

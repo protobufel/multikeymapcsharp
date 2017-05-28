@@ -14,6 +14,11 @@ namespace GitHub.Protobufel.MultiKeyMap
         {
         }
 
+        protected override IDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer)
+        {
+            return new Dictionary<TKey, TValue>(comparer ?? throw new ArgumentNullException("comparer"));
+        }
+
         [OnDeserialized]
         protected internal void OnDeserializedRestorePartialMap(StreamingContext context)
         {
