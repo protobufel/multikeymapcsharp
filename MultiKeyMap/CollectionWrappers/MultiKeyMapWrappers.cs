@@ -6,7 +6,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 {
     public static partial class EnumerableExtensions
     {
-        public static IDictionary<K1, V1> ToMultiKeyMapWrapper<T1, T2, K1, V1, K2, V2>(
+        public static IMultiKeyMap<T1, K1, V1> ToMultiKeyMapWrapper<T1, T2, K1, V1, K2, V2>(
             this IMultiKeyMap<T2, K2, V2> source,
             Func<T2, T1> subKeySelector1, Func<T1, T2> subKeySelector2,
             Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,
@@ -18,7 +18,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 subKeySelector2, keySelector1, keySelector2, valueSelector1, valueSelector2);
         }
 
-        public static IDictionary<K1, V> ToMultiKeyMapWrapper<T1, T2, K1, K2, V>(
+        public static IMultiKeyMap<T1, K1, V> ToMultiKeyMapWrapper<T1, T2, K1, K2, V>(
             this IMultiKeyMap<T2, K2, V> source,
             Func<T2, T1> subKeySelector1, Func<T1, T2> subKeySelector2,
             Func<K2, K1> keySelector1, Func<K1, K2> keySelector2)

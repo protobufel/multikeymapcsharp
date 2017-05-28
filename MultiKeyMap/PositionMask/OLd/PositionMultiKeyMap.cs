@@ -5,9 +5,9 @@
 
 //namespace GitHub.Protobufel.MultiKeyMap
 //{
-//    class PositionMultiKeyMap<T, K, V> : MaskMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+//    class PositionMultiKeyMapOld<T, K, V> : MaskMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
 //    {
-//        public PositionMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null) 
+//        public PositionMultiKeyMapOld(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null) 
 //            : base(subKeyComparer, fullKeyComparer)
 //        {
 //        }

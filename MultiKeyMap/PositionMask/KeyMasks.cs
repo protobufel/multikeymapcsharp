@@ -10,6 +10,7 @@ namespace GitHub.Protobufel.MultiKeyMap
     internal interface IKeyMask<T, K> : IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : IEnumerable<T>
     {
         K Key { get; }
+        [Obsolete("don't use it; will be removed soon", true)]
         BitArray Positions { get; }
     }
 
@@ -19,44 +20,35 @@ namespace GitHub.Protobufel.MultiKeyMap
         int Position { get; }
     }
 
-
     internal class KeyMask<T, K> : IKeyMask<T, K> where K : IEnumerable<T>
     {
-        private readonly BitArray positions;
-
         public KeyMask(K key)
         {
             if (!(key is System.ValueType) && (key == null)) throw new ArgumentNullException("key");
             Key = key;
-            this.positions = null;
         }
 
-        public KeyMask(K key, IEnumerable<bool> positions)
+        [Obsolete("Positions not used anymore here!")]
+        public KeyMask(K key, IEnumerable<bool> positions) : this(key)
         {
-            if (!(key is System.ValueType) && (key == null)) throw new ArgumentNullException("key");
-            if (positions == null) throw new ArgumentNullException("positions");
-            Key = key;
-            this.positions = positions.ToBitArray();
         }
 
-        public KeyMask(K key, BitArray positions)
+        [Obsolete("Positions not used anymore here!")]
+        public KeyMask(K key, BitArray positions) : this(key)
         {
-            if (!(key is System.ValueType) && (key == null)) throw new ArgumentNullException("key");
-            if (positions == null) throw new ArgumentNullException("positions");
-            Key = key;
-            this.positions = new BitArray(positions);
         }
 
         public K Key { get; }
 
-        public BitArray Positions => positions ?? new BitArray(0);
+        [Obsolete("Positions not used anymore here!")]
+        public virtual BitArray Positions => new BitArray(0);
 
         bool IEquatable<K>.Equals(K other)
         {
             return (other == null) ? false : Key.Equals(other);
         }
 
-        public bool Equals(IKeyMask<T, K> other)
+        public virtual bool Equals(IKeyMask<T, K> other)
         {
             if (ReferenceEquals(other, null))
             {
@@ -86,30 +78,13 @@ namespace GitHub.Protobufel.MultiKeyMap
             return Key.GetHashCode();
         }
 
-        public IEnumerator<ISubKeyMask<T>> GetEnumerator()
+        public virtual IEnumerator<ISubKeyMask<T>> GetEnumerator()
         {
-            if (Positions == null)
-            {
-                foreach (T subKey in Key)
-                {
-                    yield return new SubKeyMask<T>(subKey);
-                }
-            }
-            else
-            {
-                int i = 0;
+            int i = 0;
 
-                foreach (T subKey in Key)
-                {
-                    if (Positions.TryGet(i++))
-                    {
-                        yield return new SubKeyMask<T>(subKey, i);
-                    }
-                    else
-                    {
-                        yield return new SubKeyMask<T>(subKey);
-                    }
-                }
+            foreach (T subKey in Key)
+            {
+                yield return new SubKeyMask<T>(subKey, i);
             }
         }
 

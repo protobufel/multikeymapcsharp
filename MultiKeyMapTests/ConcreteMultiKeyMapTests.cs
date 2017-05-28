@@ -31,8 +31,8 @@ namespace MultiKeyMapTests
         //[ClassInitialize]
         public ConcreteMultiKeyMapTests()
         {
-            helper1 = InitHelper<int, int[], object>(new[] { 1, 2, 3, 4 }, new[] { 2, 5, 6, 3 }, new { A = 1, B = "hi" });
-            helper2 = InitHelper<string, string[], long>(new[] { "1", "2", "6", "hi" }, new[] { "hi", "a", "c", "2" }, 99);
+            helper1 = InitHelper<int, int[], object>(new[] { 1, 2, 3, 4 }, new[] { 2, 5, 6, 3 }, new { A = 1, B = "hi" }, new { A = 2, B = "bye" });
+            helper2 = InitHelper<string, string[], long>(new[] { "1", "2", "6", "hi" }, new[] { "hi", "a", "c", "2" }, 99, 199);
             helper3 = InitHelper<Class1<string>, List<Class1<string>>, string>(
                 new List<Class1<string>>() { GetClass1("a"), GetClass1("b"), GetClass1("M") },
                 new List<Class1<string>>() { GetClass1("C"), GetClass1("a"), GetClass1("M"), GetClass1("Y") },
@@ -199,7 +199,7 @@ namespace MultiKeyMapTests
         [DataRow(OptimizedForNonPositionalSearch, BothDefault)]
         [DataRow(OptimizedForNonPositionalSearch, StructuralBoth)]
         [DataRow(OptimizedForNonPositionalSearch, StructuralFullKeyOnly)]
-        public void AddAddWithPositionsTest(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
+        public void AddWithPositionsTest(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
         {
             InitAll(strategy, compStrategy);
 
