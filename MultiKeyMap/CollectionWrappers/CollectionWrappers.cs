@@ -47,38 +47,38 @@ namespace GitHub.Protobufel.MultiKeyMap
             this.source = source;
         }
 
-        public T this[int index] { get => source.ElementAt(index); set => throw new NotImplementedException(); }
+        public virtual T this[int index] { get => source.ElementAt(index); set => throw new NotImplementedException(); }
 
-        public int Count => source.Count();
+        public virtual int Count => source.Count();
 
-        public bool IsReadOnly => true;
+        public virtual bool IsReadOnly => true;
 
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(T item)
+        public virtual bool Remove(T item)
         {
             throw new NotImplementedException();
         }
 
-        public void RemoveAt(int index)
+        public virtual void RemoveAt(int index)
         {
             throw new NotImplementedException();
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             throw new NotImplementedException();
         }
 
-        public bool Contains(T item)
+        public virtual bool Contains(T item)
         {
             return source.Contains(item);
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public virtual void CopyTo(T[] array, int arrayIndex)
         {
             foreach (var item in source)
             {
@@ -86,12 +86,12 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public int IndexOf(T item)
+        public virtual int IndexOf(T item)
         {
             return source.Count(x => EqualityComparer<T>.Default.Equals(x, item));
         }
 
-        public void Insert(int index, T item)
+        public virtual void Insert(int index, T item)
         {
             throw new NotImplementedException();
         }

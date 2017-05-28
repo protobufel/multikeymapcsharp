@@ -73,13 +73,13 @@ namespace GitHub.Protobufel.MultiKeyMap
             this.valueSelector2 = valueSelector2 ?? throw new ArgumentNullException("valueSelector2");
         }
 
-        public V1 this[K1 key]
+        public virtual V1 this[K1 key]
         {
             get => source[key.To(keySelector2)].To(valueSelector1);
             set => source[key.To(keySelector2)] = value.To(valueSelector2);
         }
 
-        public ICollection<K1> Keys
+        public virtual ICollection<K1> Keys
         {
             get
             {
@@ -88,7 +88,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public ICollection<V1> Values
+        public virtual ICollection<V1> Values
         {
             get
             {
@@ -97,11 +97,11 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public int Count => source.Count;
+        public virtual int Count => source.Count;
 
-        public bool IsReadOnly => source.IsReadOnly;
+        public virtual bool IsReadOnly => source.IsReadOnly;
 
-        public void Add(K1 key, V1 value)
+        public virtual void Add(K1 key, V1 value)
         {
             source.Add(key.To(keySelector2), value.To(valueSelector2));
         }
@@ -111,7 +111,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             source.Add(item.Key.To(keySelector2), item.Value.To(valueSelector2));
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             source.Clear();
         }
@@ -121,7 +121,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return source.Contains(item.To(keySelector2, valueSelector2));
         }
 
-        public bool ContainsKey(K1 key)
+        public virtual bool ContainsKey(K1 key)
         {
             return source.ContainsKey(key.To(keySelector2));
         }
@@ -139,7 +139,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public bool Remove(K1 key)
+        public virtual bool Remove(K1 key)
         {
             return source.Remove(key.To(keySelector2));
         }
@@ -149,7 +149,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return source.Remove(item.To(keySelector2, valueSelector2));
         }
 
-        public bool TryGetValue(K1 key, out V1 value)
+        public virtual bool TryGetValue(K1 key, out V1 value)
         {
             if (source.TryGetValue(key.To(keySelector2), out var value2))
             {

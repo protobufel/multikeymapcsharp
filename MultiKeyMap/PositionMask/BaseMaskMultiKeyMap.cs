@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
     [Serializable]
     internal abstract class BaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<ISubKeyMask<T>, IKeyMask<T, K>, V> where K : IEnumerable<T>
     {
+        protected const float CostRatioOfNewJoinOp = 2.0F;
+
         protected BaseMaskMultiKeyMap(IEqualityComparer<ISubKeyMask<T>> subKeyComparer, IEqualityComparer<IKeyMask<T, K>> fullKeyComparer,
             IDictionary<IKeyMask<T, K>, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, IKeyMask<T, K>> partMap = null)
             : base(subKeyComparer, fullKeyComparer, fullMap, partMap)
@@ -74,6 +78,223 @@ namespace GitHub.Protobufel.MultiKeyMap
         public override bool TryGetFullKeysByPartialKey(IList<ISubKeyMask<T>> subKeys, IList<int> positions, out ISet<IKeyMask<T, K>> fullKeys)
         {
             return base.TryGetFullKeysByPartialKey(subKeys, out fullKeys);
+        }
+
+        public override bool TryGetFullKeysByPartialKey(IEnumerable<ISubKeyMask<T>> subKeys, out ISet<IKeyMask<T, K>> fullKeys)
+        {
+            if (subKeys == null) throw new ArgumentNullException("subKeys");
+
+            if (!subKeys.Any())
+            {
+                fullKeys = default(ISet<IKeyMask<T, K>>);
+                return false;
+            }
+
+            IList<ISet<IKeyMask<T, K>>> sets = new List<ISet<IKeyMask<T, K>>>();
+            IList<IEnumerable<ISet<IKeyMask<T, K>>>> colSets = new List<IEnumerable<ISet<IKeyMask<T, K>>>>();
+
+            //BitArray positionSet = positions.ToBitArray();
+            int minSize = int.MaxValue;
+            IEnumerable minSubResult = null;
+
+            foreach (var subKeyMask in subKeys)
+            {
+                if (subKeyMask.Position >= 0)
+                {
+                    if (!partMap.TryGetValue(subKeyMask, out ISet<IKeyMask<T, K>> value))
+                    {
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
+                        return false;
+                    }
+
+                    if (value.Count < minSize)
+                    {
+                        minSize = value.Count;
+                        minSubResult = value;
+                    }
+
+                    sets.Add(value);
+                }
+                else
+                {
+                    if (!TryGetPositions(subKeyMask.SubKey, out IBitList positionMask))
+                    {
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
+                        return false;
+                    }
+                    else
+                    {
+                        IList<ISet<IKeyMask<T, K>>> colSet = new List<ISet<IKeyMask<T, K>>>();
+
+                        int i = -1;
+                        var subKey = subKeyMask.SubKey;
+                        int count = 0;
+
+                        foreach (bool posExists in positionMask)
+                        {
+                            i++;
+
+                            if (posExists)
+                            {
+                                if (!partMap.TryGetValue(new SubKeyMask<T>(subKey, i), out ISet<IKeyMask<T, K>> value))
+                                {
+                                    // we shouldn't be getting here in the normal circumstances!
+                                    fullKeys = default(ISet<IKeyMask<T, K>>);
+                                    return false;
+                                }
+
+                                count += value.Count;
+                                colSet.Add(value);
+                            }
+                        }
+
+                        if (count < minSize)
+                        {
+                            minSize = count;
+                            minSubResult = colSet;
+                        }
+
+                        colSets.Add(colSet);
+                    }
+                }
+            }
+
+            HashSet<IKeyMask<T, K>> resultSet = ToSet<IKeyMask<T, K>>(minSubResult);
+
+            if ((sets.Count + colSets.Count) == 1)
+            {
+                fullKeys = resultSet;
+                return true;
+            }
+
+            //prefer sets to colSets!
+            if (sets.Count > 0)
+            {
+                foreach (var set in sets)
+                {
+                    if (!ReferenceEquals(set, minSubResult)) // check by reference!
+                    {
+                        resultSet.IntersectWith(set);
+
+                        if (resultSet.Count == 0)
+                        {
+                            fullKeys = default(ISet<IKeyMask<T, K>>);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (colSets.Count > 0)
+            {
+                foreach (var colSet in colSets)
+                {
+                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
+                    {
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
+                        return false;
+                    }
+                }
+            }
+
+            if (resultSet.Count == 0)
+            {
+                fullKeys = default(ISet<IKeyMask<T, K>>);
+                return false;
+            }
+
+            fullKeys = resultSet;
+            return true;
+        }
+
+        protected virtual HashSet<E> ToSet<E>(IEnumerable source, IEqualityComparer<E> comparer = null)
+        {
+            switch (source)
+            {
+                case ISet<E> set:
+                    return new HashSet<E>(set, comparer);
+                case IEnumerable<ISet<E>> colSet:
+                    HashSet<E> result = new HashSet<E>(comparer);
+
+                    foreach (var set in colSet)
+                    {
+                        result.UnionWith(set);
+                    }
+
+                    return result;
+                default:
+                    throw new InvalidOperationException("unknown source type");
+            }
+        }
+
+        protected virtual bool IntersectWith<E>(HashSet<E> set, IEnumerable<ISet<E>> colSet)
+        {
+            if ((set.Count == 0) || !colSet.Any())
+            {
+                return false;
+            }
+
+            if (IsJoinMoreExpensive(set, colSet, CostRatioOfNewJoinOp))
+            {
+                //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
+                set.RemoveWhere(e =>
+                {
+                    foreach (var subSet in colSet)
+                    {
+                        if (subSet.Contains(e))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+            }
+            else
+            {
+                if (!TryJoinSets(colSet, out ISet<E> joinedSet))
+                {
+                    set.Clear();
+                    return false;
+                }
+            }
+
+            return (set.Count > 0);
+        }
+
+        private bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
+        {
+            long secondSize = 0;
+            int secondCount = 0;
+
+            foreach (var col in second)
+            {
+                secondSize += col.Count;
+                secondCount++;
+            }
+
+            return (CostRatioOfNewJoinOp * secondSize) > ((first.Count - 1) * secondCount);
+        }
+
+        private bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
+        {
+            bool first = true;
+            result = null;
+
+            foreach (var set in sets)
+            {
+                if (first)
+                {
+                    first = false;
+                    result = new HashSet<E>(set);
+                }
+                else
+                {
+                    result.UnionWith(set);
+                }
+            }
+
+            return (result != null) && (result.Count > 0);
         }
 
         #endregion

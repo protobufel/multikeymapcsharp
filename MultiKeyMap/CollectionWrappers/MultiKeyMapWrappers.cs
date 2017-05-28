@@ -69,12 +69,12 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         protected virtual IMultiKeyMap<T2, K2, V2> Source => source as IMultiKeyMap<T2, K2, V2>;
 
-        public void Add(K1 key, V1 value, IEnumerable<bool> positions)
+        public virtual void Add(K1 key, V1 value, IEnumerable<bool> positions)
         {
             Source.Add(key.To(keySelector2), value.To(valueSelector2), positions);
         }
 
-        public bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, out ICollection<KeyValuePair<K1, V1>> entries)
+        public virtual bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, out ICollection<KeyValuePair<K1, V1>> entries)
         {
             if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var entries2))
             {
@@ -86,7 +86,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public bool TryGetEntriesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<KeyValuePair<K1, V1>> entries)
+        public virtual bool TryGetEntriesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<KeyValuePair<K1, V1>> entries)
         {
             if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var entries2))
             {
@@ -98,7 +98,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public bool TryGetFullKeysByPartialKey(IEnumerable<T1> partialKey, out ISet<K1> fullKeys)
+        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T1> partialKey, out ISet<K1> fullKeys)
         {
             if (Source.TryGetFullKeysByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var fullKeys2))
             {
@@ -110,7 +110,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public bool TryGetFullKeysByPartialKey(IList<T1> partialKey, IList<int> positions, out ISet<K1> fullKeys)
+        public virtual bool TryGetFullKeysByPartialKey(IList<T1> partialKey, IList<int> positions, out ISet<K1> fullKeys)
         {
             if (Source.TryGetFullKeysByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var fullKeys2))
             {
@@ -122,7 +122,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public bool TryGetValuesByPartialKey(IEnumerable<T1> partialKey, out ICollection<V1> values)
+        public virtual bool TryGetValuesByPartialKey(IEnumerable<T1> partialKey, out ICollection<V1> values)
         {
             if (Source.TryGetValuesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var values2))
             {
@@ -134,7 +134,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public bool TryGetValuesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<V1> values)
+        public virtual bool TryGetValuesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<V1> values)
         {
             if (Source.TryGetValuesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var values2))
             {
