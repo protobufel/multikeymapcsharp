@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections;
@@ -9,22 +8,46 @@ namespace GitHub.Protobufel.MultiKeyMap
     public static partial class EnumerableExtensions
     {
         public static IDictionary<K1, V1> ToDictionaryWrapper<K1, V1, K2, V2>(this IDictionary<K2, V2> source,
-            Func<K2, K1> keySelector1, Func<V2, V1> valueSelector1,
-            Func<K1, K2> keySelector2, Func<V1, V2> valueSelector2)
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,
+            Func<V2, V1> valueSelector1, Func<V1, V2> valueSelector2)
         {
-            return new VirtualDictionary<K1, V1, K2, V2>(source, keySelector1, valueSelector1, 
-                keySelector2, valueSelector2);
+            return new VirtualDictionary<K1, V1, K2, V2>(source, keySelector1, keySelector2,
+                valueSelector1, valueSelector2);
         }
 
         public static IDictionary<K1, V1> ToReadOnlyDictionary<K1, V1, K2, V2>(this IDictionary<K2, V2> source,
-            Func<K2, K1> keySelector1, Func<V2, V1> valueSelector1,
-            Func<K1, K2> keySelector2, Func<V1, V2> valueSelector2)
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,
+            Func<V2, V1> valueSelector1, Func<V1, V2> valueSelector2)
         {
-            return new ReadOnlyDictionary<K1, V1>(new VirtualDictionary<K1, V1, K2, V2>(source, keySelector1, valueSelector1,
-                keySelector2, valueSelector2));
+            return new ReadOnlyDictionary<K1, V1>(new VirtualDictionary<K1, V1, K2, V2>(source, keySelector1, keySelector2,
+                valueSelector1, valueSelector2));
+        }
+
+        public static IDictionary<K1, V> ToDictionaryWrapper<K1, K2, V>(this IDictionary<K2, V> source,
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2)
+        {
+            return new VirtualDictionary<K1, K2, V>(source, keySelector1, keySelector2);
+        }
+
+        public static IDictionary<K1, V> ToReadOnlyDictionary<K1, K2, V>(this IDictionary<K2, V> source,
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2)
+        {
+            return new ReadOnlyDictionary<K1, V>(new VirtualDictionary<K1, K2, V>(source, keySelector1, keySelector2));
         }
     }
 
+    [Serializable]
+    internal class VirtualDictionary<K1, K2, V> : VirtualDictionary<K1, V, K2, V>
+    {
+        static protected readonly Func<V, V> ValueIdentity = x => x;
+
+        public VirtualDictionary(IDictionary<K2, V> source,
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2) : base(source, keySelector1, keySelector2, ValueIdentity, ValueIdentity)
+        {
+        }
+    }
+
+    [Serializable]
     internal class VirtualDictionary<K1, V1, K2, V2> : IDictionary<K1, V1>
     {
         protected IDictionary<K2, V2> source;
@@ -33,18 +56,20 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected Func<K1, K2> keySelector2;
         protected Func<V1, V2> valueSelector2;
 
+        [NonSerialized]
         protected ICollection<K1> keys;
+        [NonSerialized]
         protected ICollection<V1> values;
 
         public VirtualDictionary(IDictionary<K2, V2> source,
-            Func<K2, K1> keySelector1, Func<V2, V1> valueSelector1,
-            Func<K1, K2> keySelector2, Func<V1, V2> valueSelector2
+            Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,
+            Func<V2, V1> valueSelector1, Func<V1, V2> valueSelector2
             )
         {
             this.source = source ?? throw new ArgumentNullException("source");
             this.keySelector1 = keySelector1 ?? throw new ArgumentNullException("keySelector1");
-            this.valueSelector1 = valueSelector1 ?? throw new ArgumentNullException("valueSelector1");
             this.keySelector2 = keySelector2 ?? throw new ArgumentNullException("keySelector2");
+            this.valueSelector1 = valueSelector1 ?? throw new ArgumentNullException("valueSelector1");
             this.valueSelector2 = valueSelector2 ?? throw new ArgumentNullException("valueSelector2");
         }
 
@@ -81,7 +106,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             source.Add(key.To(keySelector2), value.To(valueSelector2));
         }
 
-        public void Add(KeyValuePair<K1, V1> item)
+        void ICollection<KeyValuePair<K1, V1>>.Add(KeyValuePair<K1, V1> item)
         {
             source.Add(item.Key.To(keySelector2), item.Value.To(valueSelector2));
         }
@@ -91,7 +116,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             source.Clear();
         }
 
-        public bool Contains(KeyValuePair<K1, V1> item)
+        bool ICollection<KeyValuePair<K1, V1>>.Contains(KeyValuePair<K1, V1> item)
         {
             return source.Contains(item.To(keySelector2, valueSelector2));
         }
@@ -101,7 +126,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return source.ContainsKey(key.To(keySelector2));
         }
 
-        public void CopyTo(KeyValuePair<K1, V1>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<K1, V1>>.CopyTo(KeyValuePair<K1, V1>[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException("array");
             if (array.GetLowerBound(0) != 0) throw new ArgumentException("array has non-zero lower bound");
@@ -119,7 +144,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return source.Remove(key.To(keySelector2));
         }
 
-        public bool Remove(KeyValuePair<K1, V1> item)
+        bool ICollection<KeyValuePair<K1, V1>>.Remove(KeyValuePair<K1, V1> item)
         {
             return source.Remove(item.To(keySelector2, valueSelector2));
         }
@@ -136,7 +161,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public IEnumerator<KeyValuePair<K1, V1>> GetEnumerator()
+        IEnumerator<KeyValuePair<K1, V1>> IEnumerable<KeyValuePair<K1, V1>>.GetEnumerator()
         {
             foreach (var pair in source)
             {
@@ -146,7 +171,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return (this as IEnumerable<KeyValuePair<K1, V1>>).GetEnumerator();
         }
     }
 
@@ -154,8 +179,8 @@ namespace GitHub.Protobufel.MultiKeyMap
     {
         public static TResult To<TSource, TResult>(this TSource source, Func<TSource, TResult> selector)
         {
-            if (selector == null) throw new ArgumentNullException("selector");
             if (source == null) throw new ArgumentNullException("source");
+            if (selector == null) throw new ArgumentNullException("selector");
             return selector.Invoke(source);
         }
 
@@ -165,6 +190,11 @@ namespace GitHub.Protobufel.MultiKeyMap
             if (keySelector == null) throw new ArgumentNullException("keySelector");
             if (valueSelector == null) throw new ArgumentNullException("valueSelector");
             return new KeyValuePair<K2, V2>(source.Key.To(keySelector), source.Value.To(valueSelector));
+        }
+
+        public static Func<T, T> IdentitySelector<T>(this T source)
+        {
+            return x => x;
         }
     }
 }

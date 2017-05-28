@@ -37,6 +37,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         }
     }
 
+    [Serializable]
     internal class VirtualList<T> : IList<T>
     {
         protected IEnumerable<T> source;
@@ -85,14 +86,6 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            foreach (var item in source)
-            {
-                yield return item;
-            }
-        }
-
         public int IndexOf(T item)
         {
             return source.Count(x => EqualityComparer<T>.Default.Equals(x, item));
@@ -101,6 +94,14 @@ namespace GitHub.Protobufel.MultiKeyMap
         public void Insert(int index, T item)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var item in source)
+            {
+                yield return item;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
