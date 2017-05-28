@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         public static IDictionary<K1, V1> ToDictionaryWrapper<K1, V1, K2, V2>(this IDictionary<K2, V2> source,
             Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,

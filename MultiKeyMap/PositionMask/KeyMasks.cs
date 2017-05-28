@@ -10,8 +10,6 @@ namespace GitHub.Protobufel.MultiKeyMap
     internal interface IKeyMask<T, K> : IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : IEnumerable<T>
     {
         K Key { get; }
-        [Obsolete("don't use it; will be removed soon", true)]
-        BitArray Positions { get; }
     }
 
     internal interface ISubKeyMask<T> : IEquatable<ISubKeyMask<T>>, IEquatable<T>
@@ -28,20 +26,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             Key = key;
         }
 
-        [Obsolete("Positions not used anymore here!")]
-        public KeyMask(K key, IEnumerable<bool> positions) : this(key)
-        {
-        }
-
-        [Obsolete("Positions not used anymore here!")]
-        public KeyMask(K key, BitArray positions) : this(key)
-        {
-        }
-
         public K Key { get; }
-
-        [Obsolete("Positions not used anymore here!")]
-        public virtual BitArray Positions => new BitArray(0);
 
         bool IEquatable<K>.Equals(K other)
         {
@@ -159,16 +144,6 @@ namespace GitHub.Protobufel.MultiKeyMap
         public static ISubKeyMask<T> ToSubKeyMask<T>(this T subKey)
         {
             return new SubKeyMask<T>(subKey);
-        }
-
-        public static IKeyMask<T, K> ToKeyMaskWithBitArray<T, K>(this K key, BitArray positions) where K : IEnumerable<T>
-        {
-            return new KeyMask<T, K>(key, positions);
-        }
-
-        public static IKeyMask<T, K> ToKeyMask<T, K>(this K key, IEnumerable<bool> positions) where K : IEnumerable<T>
-        {
-            return new KeyMask<T, K>(key, positions);
         }
 
         public static ISubKeyMask<T> ToSubKeyMask<T>(this T subKey, int position)

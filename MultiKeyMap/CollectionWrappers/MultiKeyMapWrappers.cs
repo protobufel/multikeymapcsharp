@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         public static IMultiKeyMap<T1, K1, V1> ToMultiKeyMapWrapper<T1, T2, K1, V1, K2, V2>(
             this IMultiKeyMap<T2, K2, V2> source,

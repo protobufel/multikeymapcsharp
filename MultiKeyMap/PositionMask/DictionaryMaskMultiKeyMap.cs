@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         internal static IMultiKeyMap<T, K, V> CreateDictionaryPositionOptimizedMultiKeyMap<T, K, V>(
             IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null)

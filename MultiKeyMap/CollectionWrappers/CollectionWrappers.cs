@@ -6,7 +6,7 @@ using System.Collections;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         internal static IList<T> ToListWrapper<T>(this IEnumerable<T> source)
         {

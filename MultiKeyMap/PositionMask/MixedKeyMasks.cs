@@ -26,7 +26,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             this.positions = new BitArray(positions);
         }
 
-        public override BitArray Positions => positions ?? new BitArray(0);
+        public virtual BitArray Positions => positions ?? new BitArray(0);
 
         bool IEquatable<K>.Equals(K other)
         {
