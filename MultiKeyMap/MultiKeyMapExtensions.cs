@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace GitHub.Protobufel.MultiKeyMap.Extensions
+namespace GitHub.Protobufel.MultiKeyMap
 {
     /// <summary>
     /// Provides MultiKeyMap copy extensions

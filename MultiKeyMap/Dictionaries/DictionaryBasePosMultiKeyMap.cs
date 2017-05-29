@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
+using GitHub.Protobufel.MultiKeyMap.PositionMap;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.Dictionaries
 {
     [Serializable]
     internal class DictionaryBasePosMultiKeyMap<T, K, V> : BasePosMultiKeyMap<T, K, V> where K : IEnumerable<T>
@@ -22,7 +22,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         //}
 
         [OnDeserialized]
-        protected internal void OnDeserializedRestorePartialMap(StreamingContext context)
+        protected void OnDeserializedRestorePartialMap(StreamingContext context)
         {
             (fullMap as IDeserializationCallback).OnDeserialization(null);
 

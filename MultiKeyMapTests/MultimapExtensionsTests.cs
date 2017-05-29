@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using GitHub.Protobufel.MultiKeyMap;
-using GitHub.Protobufel.MultiKeyMap.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MultiKeyMapTests

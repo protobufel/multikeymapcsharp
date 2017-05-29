@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
+using GitHub.Protobufel.MultiKeyMap.PositionMask;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMap
 {
     [Serializable]
     internal abstract class BasePosMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>

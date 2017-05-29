@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 {
     // Consider IEquatable<K> and  IEquatable<T>, and use them as key types, then both the plain type and its mask wrapper would be acceptable by IDictionary!
     // It is a space saver, but more trouble in code.

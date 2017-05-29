@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -75,6 +76,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="positions">The sequence of the sub-key positions corresponding to the full key, wherein <code>true</code> signifies the positional 
         /// sub-key to search exactly in its position, otherwise, <code>false</code>. The size of this list can be smaller than 
         /// the full key list, meaning the rest of the sub-keys are non-positional.</param>
+        [Obsolete("NOOP, not being used by any algorithm strategy, at least, yet!", false)]
         void Add(K key, V value, IEnumerable<bool> positions);
     }
 }

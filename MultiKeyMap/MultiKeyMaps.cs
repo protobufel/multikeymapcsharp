@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
+using GitHub.Protobufel.MultiKeyMap.Base;
+using GitHub.Protobufel.MultiKeyMap.Dictionaries;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -47,9 +48,9 @@ namespace GitHub.Protobufel.MultiKeyMap
             switch (creationStrategy)
             {
                 case MultiKeyCreationStrategy.OptimizedForNonPositionalSearch:
-                    return new DictionaryBaseMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+                    return new DictionaryNonPositionalMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 case MultiKeyCreationStrategy.OptimizedForPositionalSearch:
-                    return EnumerableExtensions.CreateDictionaryPositionOptimizedMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
+                    return new DictionaryMaskMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 // return new DictionaryBasePosMaskMultiKeyMap<T, K, V>(subKeyComparer, fullKeyComparer);
                 default:
                     throw new ArgumentOutOfRangeException("creationStrategy");

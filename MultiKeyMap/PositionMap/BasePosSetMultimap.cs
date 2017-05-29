@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
-using static GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions.LiteSetMultimapExtensions;
+using static GitHub.Protobufel.MultiKeyMap.Base.LiteSetMultimapExtensions;
+using GitHub.Protobufel.MultiKeyMap.PositionMask;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMap
 {
     internal class BasePosSetMultimap<K, V> : IPosSetMultimap<K, V>
     {

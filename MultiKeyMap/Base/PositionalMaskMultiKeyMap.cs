@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using static GitHub.Protobufel.MultiKeyMap.KeyMaskExtensions;
+using GitHub.Protobufel.MultiKeyMap.PositionMask;
 
-namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
+namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
     internal abstract class PositionalMaskMultiKeyMap<T, K, V> : PositionalBaseMaskMultiKeyMap<T, K, V> where K : IEnumerable<T>
@@ -15,8 +15,10 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null)
             : base(subKeyComparer, fullKeyComparer, fullMap, partMap)
         {
-            subKeyPositions = CreateSupportDictionary<T, IBitList>(OriginalSubKeyComparer);
+            subKeyPositions = CreateSupportDictionary<T, IBitList>(SubKeyComparer);
         }
+
+        //protected virtual IEqualityComparer<T> OriginalSubKeyComparer => (subKeyComparer as SubKeyMaskComparer<T>).SubKeyComparer;
 
         protected override bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask)
         {
@@ -76,12 +78,9 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return false;
         }
 
-        protected virtual IEqualityComparer<T> OriginalSubKeyComparer => (subKeyComparer as SubKeyMaskComparer<T>).SubKeyComparer;
-        protected virtual IEqualityComparer<K> OriginalFullKeyComparer => (fullKeyComparer as KeyMaskComparer<T, K>).KeyComparer;
-
         protected override void OnDeserializedHelper(StreamingContext context)
         {
-            subKeyPositions = CreateSupportDictionary<T, IBitList>(OriginalSubKeyComparer);
+            subKeyPositions = CreateSupportDictionary<T, IBitList>(SubKeyComparer);
             base.OnDeserializedHelper(context);
         }
     }

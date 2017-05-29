@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     internal interface ILiteSetMultimap<K, V>
     {

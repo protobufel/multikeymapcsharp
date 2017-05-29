@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 {
 
     internal class MixedKeyMask<T, K> : KeyMask<T, K>, IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : IEnumerable<T>

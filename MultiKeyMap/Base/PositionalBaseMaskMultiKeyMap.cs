@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
+using GitHub.Protobufel.MultiKeyMap.PositionMask;
 
-namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
+namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
     internal abstract class PositionalBaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
@@ -14,7 +14,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
         protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
 
         protected PositionalBaseMaskMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
-            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null) 
+            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null)
             : base(subKeyComparer, fullKeyComparer, fullMap)
         {
             this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
@@ -187,7 +187,9 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 
             foreach (T subKey in key)
             {
-                partMap.Add(subKey.ToSubKeyMask(i++), key);
+                ISubKeyMask<T> subKeyMask = subKey.ToSubKeyMask(i++);
+                partMap.Add(subKeyMask, key);
+                RegisterSubKeyPosition(subKeyMask);
             }
         }
 
@@ -197,13 +199,19 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 
             foreach (T subKey in key)
             {
-                partMap.Remove(subKey.ToSubKeyMask(i++), key);
+                ISubKeyMask<T> subKeyMask = subKey.ToSubKeyMask(i++);
+
+                if (partMap.Remove(subKeyMask, key, out bool removedEntireKey) && removedEntireKey)
+                {
+                    RemoveSubKeyPosition(subKeyMask, out bool removedEntireSubKey);
+                }
             }
         }
 
         protected override void ClearPartial()
         {
             partMap.Clear();
+            ClearSubKeyPositions();
         }
 
         #endregion

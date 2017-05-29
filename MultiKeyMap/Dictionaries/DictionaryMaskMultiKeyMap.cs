@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using GitHub.Protobufel.MultiKeyMap.PositionMask.Simple;
+using GitHub.Protobufel.MultiKeyMap.Base;
 
-namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Concrete
+namespace GitHub.Protobufel.MultiKeyMap.Dictionaries
 {
+    [Serializable]
     internal class DictionaryMaskMultiKeyMap<T, K, V> : PositionalMaskMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
         public DictionaryMaskMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null)
@@ -18,7 +19,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Concrete
         }
 
         [OnDeserialized]
-        protected virtual void OnDeserialized(StreamingContext context)
+        protected void OnDeserialized(StreamingContext context)
         {
             base.OnDeserializedHelper(context);
         }
