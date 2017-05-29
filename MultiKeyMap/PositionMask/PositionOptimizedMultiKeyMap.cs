@@ -36,18 +36,18 @@ namespace GitHub.Protobufel.MultiKeyMap
             return x => x.ToKeyMask<TSubKey, TKey>();
         }
 
-        public override bool TryGetFullKeysByPartialKey(IList<T> partialKey, IList<int> positions, out ISet<K> fullKeys)
+        public override bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, IEnumerable<int> positions, out IEnumerable<K> fullKeys)
         {
             var subKeyMasks = partialKey.Zip(positions.Concat(Enumerable.Repeat(-1, int.MaxValue)),
                 (subKey, pos) => subKey.ToSubKeyMask(pos));
 
             if (Source.TryGetFullKeysByPartialKey(subKeyMasks, out var fullKeys2))
             {
-                fullKeys = new HashSet<K>(fullKeys2.Select(k => k.To(keySelector1)));
+                fullKeys = fullKeys2.Select(k => k.To(keySelector1));
                 return true;
             }
 
-            fullKeys = default(ISet<K>);
+            fullKeys = default(IEnumerable<K>);
             return false;
         }
     }

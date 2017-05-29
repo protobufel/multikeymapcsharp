@@ -74,7 +74,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             Source.Add(key.To(keySelector2), value.To(valueSelector2), positions);
         }
 
-        public virtual bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, out ICollection<KeyValuePair<K1, V1>> entries)
+        public virtual bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, out IEnumerable<KeyValuePair<K1, V1>> entries)
         {
             if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var entries2))
             {
@@ -82,67 +82,67 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return true;
             }
 
-            entries = default(ICollection<KeyValuePair<K1, V1>>);
+            entries = default(IEnumerable<KeyValuePair<K1, V1>>);
             return false;
         }
 
-        public virtual bool TryGetEntriesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<KeyValuePair<K1, V1>> entries)
+        public virtual bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, IEnumerable<int> positions, out IEnumerable<KeyValuePair<K1, V1>> entries)
         {
-            if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var entries2))
+            if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), positions, out var entries2))
             {
-                entries = entries2.Select(kv => kv.To(keySelector1, valueSelector1)).ToReadOnlyCollection();
+                entries = entries2.Select(kv => kv.To(keySelector1, valueSelector1));
                 return true;
             }
 
-            entries = default(ICollection<KeyValuePair<K1, V1>>);
+            entries = default(IEnumerable<KeyValuePair<K1, V1>>);
             return false;
         }
 
-        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T1> partialKey, out ISet<K1> fullKeys)
+        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T1> partialKey, out IEnumerable<K1> fullKeys)
         {
             if (Source.TryGetFullKeysByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var fullKeys2))
             {
-                fullKeys = new HashSet<K1>(fullKeys2.Select(k => k.To(keySelector1)));
+                fullKeys = fullKeys2.Select(k => k.To(keySelector1));
                 return true;
             }
 
-            fullKeys = default(ISet<K1>);
+            fullKeys = default(IEnumerable<K1>);
             return false;
         }
 
-        public virtual bool TryGetFullKeysByPartialKey(IList<T1> partialKey, IList<int> positions, out ISet<K1> fullKeys)
+        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T1> partialKey, IEnumerable<int> positions, out IEnumerable<K1> fullKeys)
         {
-            if (Source.TryGetFullKeysByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var fullKeys2))
+            if (Source.TryGetFullKeysByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), positions, out var fullKeys2))
             {
-                fullKeys = new HashSet<K1>(fullKeys2.Select(k => k.To(keySelector1)));
+                fullKeys = fullKeys2.Select(k => k.To(keySelector1));
                 return true;
             }
 
-            fullKeys = default(ISet<K1>);
+            fullKeys = default(IEnumerable<K1>);
             return false;
         }
 
-        public virtual bool TryGetValuesByPartialKey(IEnumerable<T1> partialKey, out ICollection<V1> values)
+        public virtual bool TryGetValuesByPartialKey(IEnumerable<T1> partialKey, out IEnumerable<V1> values)
         {
             if (Source.TryGetValuesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var values2))
             {
-                values = values2.Select(v => v.To(valueSelector1)).ToReadOnlyCollection();
+                values = values2.Select(v => v.To(valueSelector1));
                 return true;
             }
 
-            values = default(ICollection<V1>);
+            values = default(IEnumerable<V1>);
             return false;
         }
 
-        public virtual bool TryGetValuesByPartialKey(IList<T1> partialKey, IList<int> positions, out ICollection<V1> values)
+        public virtual bool TryGetValuesByPartialKey(IEnumerable<T1> partialKey, IEnumerable<int> positions, out IEnumerable<V1> values)
         {
-            if (Source.TryGetValuesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)).ToListWrapper(), positions, out var values2))
+            if (Source.TryGetValuesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), positions, out var values2))
             {
-                values = values2.Select(v => v.To(valueSelector1)).ToReadOnlyCollection();
+                values = values2.Select(v => v.To(valueSelector1));
                 return true;
             }
 
-            values = default(ICollection<V1>);
+            values = default(IEnumerable<V1>);
             return false;
         }
     }

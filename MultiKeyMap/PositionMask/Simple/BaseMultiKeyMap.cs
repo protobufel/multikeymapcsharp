@@ -2,35 +2,53 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 {
     [Serializable]
-    internal abstract class BasePosMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
-        private const float CostRatioOfNewJoinOp = 2.0F;
-
         internal protected IDictionary<K, V> fullMap;
         [NonSerialized]
-        internal protected IPosSetMultimap<T, K> partMap;
+        internal protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
 
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
-        internal BasePosMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
-            IDictionary<K, V> fullMap, IPosSetMultimap<T, K> partMap)
+        protected BaseMultiKeyMap() { }
+
+        protected BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
+            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null)
         {
-            this.fullMap = fullMap ?? throw new ArgumentNullException("fullMap");
-            this.partMap = partMap ?? throw new ArgumentNullException("partMap");
-            this.subKeyComparer = subKeyComparer ?? throw new ArgumentNullException("subKeyComparer");
-            this.fullKeyComparer = fullKeyComparer ?? throw new ArgumentNullException("fullKeyComparer");
+            this.subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
+            this.fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
+            this.fullMap = fullMap ?? CreateDictionary<K, V>(fullKeyComparer);
+            this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
         }
 
-        protected internal virtual IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
-        protected internal virtual IEqualityComparer<T> SubKeyComparer => subKeyComparer;
+        protected abstract IDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer);
+
+        protected virtual IDictionary<TKey, TValue> CreateSupportDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer)
+        {
+            return CreateDictionary<TKey, TValue>(comparer);
+        }
+
+        protected virtual ILiteSetMultimap<ISubKeyMask<TSubKey>, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
+            IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
+            where TKey : IEnumerable<TSubKey>
+        {
+            return CreateSupportDictionary<ISubKeyMask<TSubKey>, ISet<TKey>>(subKeyComparer.ToSubKeyMaskComparer())
+                .ToSetMultimap(fullKeyComparer);
+        }
+
+        protected virtual IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
+        protected virtual IEqualityComparer<T> SubKeyComparer => subKeyComparer;
+        protected virtual IEqualityComparer<ISubKeyMask<T>> SubKeyMaskComparer => subKeyComparer.ToSubKeyMaskComparer();
 
         #region non-positional TryGetsByPartialKey
+
         public virtual bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out IEnumerable<V> values)
         {
             if (!TryGetFullKeysByPartialKey(partialKey, out IEnumerable<K> fullKeys))
@@ -66,7 +84,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            var result  = new List<KeyValuePair<K, V>>();
+            var result = new List<KeyValuePair<K, V>>();
 
             foreach (K fullKey in fullKeys)
             {
@@ -88,13 +106,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, out IEnumerable<K> fullKeys)
         {
-            if (partialKey == null) throw new ArgumentNullException();
-            return TryGetFullKeysByPartialKey(partialKey, Enumerable.Empty<int>(), out fullKeys);
-        }
-
-        protected static IList<T> AsList(IEnumerable<T> enumerable)
-        {
-            return (enumerable as IList<T>) ?? new List<T>(enumerable);
+            return TryGetFullKeysByPartialKey(partialKey, Enumerable.Empty<int>(), out IEnumerable<K> fullKeys);
         }
 
         #endregion
@@ -167,190 +179,149 @@ namespace GitHub.Protobufel.MultiKeyMap
                 return false;
             }
 
-            IList<T> subKeyList = subKeys as IList<T> ?? subKeys.ToList();
-            IList<int> positionList = positions as IList<int> ?? positions.ToList();
-
-            IList<ISet<K>> sets = new List<ISet<K>>();
-            IList<IEnumerable<ISet<K>>> colSets = new List<IEnumerable<ISet<K>>>();
-
-            BitArray positionSet = positions.ToBitArray();
+            IList<ISet<K>> subResults = new List<ISet<K>>();
             int minSize = int.MaxValue;
-            IEnumerable minSubResult = null;
+            int minPos = -1;
 
-            for (int i = 0; i < subKeyList.Count; i++)
+            foreach (var subKey in subKeys)
             {
-                if ((i < positionList.Count) && (positionList[i] >= 0))
+                if (!partMap.TryGetValue(subKey, out ISet<K> subResult))
                 {
-                    if (!partMap.TryGetValue(subKeyList[i], positionList[i], out ISet<K> value, positionSet))
-                    {
-                        fullKeys = default(ISet<K>);
-                        return false;
-                    }
-
-                    if (value.Count < minSize)
-                    {
-                        minSize = value.Count;
-                        minSubResult = value;
-                    }
-
-                    sets.Add(value);
+                    fullKeys = default(ISet<K>);
+                    return false;
                 }
-                else
+
+                if (subResult.Count < minSize)
                 {
-                    int count = partMap.TryGetAllValues(subKeyList[i], out IEnumerable<ISet<K>> value, positionSet);
-
-                    if (count == 0)
-                    {
-                        fullKeys = default(ISet<K>);
-                        return false;
-                    }
-
-                    if (count < minSize)
-                    {
-                        minSize = count;
-                        minSubResult = value;
-                    }
-
-                    colSets.Add(value);
+                    minSize = subResult.Count;
+                    minPos = subResults.Count;
                 }
+
+                subResults.Add(subResult);
             }
 
-            HashSet<K> resultSet = ToSet<K>(minSubResult);
-
-            if ((sets.Count + colSets.Count) == 1)
-            {
-                fullKeys = resultSet;
-                return true;
-            }
-
-            //prefer sets to colSets!
-            if (sets.Count > 0)
-            {
-                foreach (var set in sets)
-                {
-                    if (!ReferenceEquals(set, minSubResult)) // check by reference!
-                    {
-                        resultSet.IntersectWith(set);
-
-                        if (resultSet.Count == 0)
-                        {
-                            fullKeys = default(ISet<K>);
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            if (colSets.Count > 0)
-            {
-                foreach (var colSet in colSets)
-                {
-                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
-                    {
-                        fullKeys = default(ISet<K>);
-                        return false;
-                    }
-                }
-            }
-
-            if (resultSet.Count == 0)
+            if (subResults.Count == 0)
             {
                 fullKeys = default(ISet<K>);
                 return false;
             }
 
-            fullKeys = resultSet;
-            return true;
-        }
-
-        protected virtual HashSet<E> ToSet<E>(IEnumerable source, IEqualityComparer<E> comparer = null)
-        {
-            switch (source)
+            if (GetAtOrNegative(positions, minPos) < 0)
             {
-                case ISet<E> set:
-                    return new HashSet<E>(set, comparer);
-                case IEnumerable<ISet<E>> colSet:
-                    HashSet<E> result = new HashSet<E>(comparer);
+                fullKeys = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
-                    foreach (var set in colSet)
-                    {
-                        result.UnionWith(set);
-                    }
-
-                    return result;
-                default:
-                    throw new InvalidOperationException("unknown source type");
             }
-        }
-
-        protected virtual bool IntersectWith<E>(HashSet<E> set, IEnumerable<ISet<E>> colSet)
-        {
-            if ((set.Count == 0) || !colSet.Any())
+            else if (!TryGetFilteredFullKeys(GetAtOrNegative(positions, minPos), subKeys[minPos], subResults[minPos], FullKeyComparer, out fullKeys))
             {
                 return false;
             }
 
-            if (IsJoinMoreExpensive(set, colSet, CostRatioOfNewJoinOp))
+            if (subResults.Count == 1)
             {
-                //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
-                set.RemoveWhere(e =>
+                return true;
+            }
+
+            for (int i = 0; i < subResults.Count; i++)
+            {
+                if (i != minPos)
                 {
-                    foreach (var subSet in colSet)
+                    if (!TryGetFilteredFullKeys(GetAtOrNegative(positions, i), subKeys[i], subResults[i], FullKeyComparer, out ISet<K> filteredSubResult))
                     {
-                        if (subSet.Contains(e))
-                        {
-                            return false;
-                        }
+                        fullKeys = default(ISet<K>);
+                        return false;
                     }
 
-                    return true;
-                });
-            }
-            else
-            {
-                if (!TryJoinSets(colSet, out ISet<E> joinedSet))
-                {
-                    set.Clear();
-                    return false;
+                    fullKeys.IntersectWith(filteredSubResult);
+
+                    if (fullKeys.Count == 0)
+                    {
+                        fullKeys = default(ISet<K>);
+                        return false;
+                    }
                 }
             }
 
-            return (set.Count > 0);
+            return true;
         }
 
-        private bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
+        private int GetAtOrNegative(IList<int> positions, int pos)
         {
-            long secondSize = 0;
-            int secondCount = 0;
-
-            foreach (var col in second)
-            {
-                secondSize += col.Count;
-                secondCount++;
-            }
-
-            return (CostRatioOfNewJoinOp * secondSize) > ((first.Count - 1) * secondCount);
+            return pos < positions.Count ? positions[pos] : -1;
         }
 
-        private bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
-        {
-            bool first = true;
-            result = null;
 
-            foreach (var set in sets)
+        internal protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
+        {
+            if (source.Count == 0)
             {
-                if (first)
+                target = default(ISet<K>);
+                return false;
+            }
+
+            if (position < 0)
+            {
+                target = source;
+                return true;
+            }
+
+            target = new HashSet<K>(comparer);
+
+            foreach (K fullKey in source)
+            {
+                if (subkey.Equals(fullKey.ElementAtOrDefault(position)))
                 {
-                    first = false;
-                    result = new HashSet<E>(set);
-                }
-                else
-                {
-                    result.UnionWith(set);
+                    target.Add(fullKey);
                 }
             }
 
-            return (result != null) && (result.Count > 0);
+            if (target.Count == 0)
+            {
+                target = default(ISet<K>);
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+        #region single sub-key TryGet queries
+
+        protected virtual bool TryGetValuesByPartialKey(T partialKey, out IEnumerable<V> values)
+        {
+            if (TryGetFullKeysByPartialKey(partialKey, out IEnumerable<K> fullKeys))
+            {
+                values = fullKeys.Select(key => fullMap.TryGetValue(key, out V value) ? value : default(V)).ToList();
+                return true;
+            }
+
+            values = default(IEnumerable<V>);
+            return false;
+        }
+
+        protected virtual bool TryGetEntriesByPartialKey(T partialKey, out IEnumerable<KeyValuePair<K, V>> entries)
+        {
+            if (TryGetFullKeysByPartialKey(partialKey, out IEnumerable<K> fullKeys))
+            {
+                entries = fullKeys.Select(key => fullMap.TryGetValue(key, out V value)
+                ? new KeyValuePair<K, V>(key, value) : default(KeyValuePair<K, V>)).ToList();
+                return true;
+            }
+
+            entries = default(IEnumerable<KeyValuePair<K, V>>);
+            return false;
+        }
+
+        protected virtual bool TryGetFullKeysByPartialKey(T partialKey, out IEnumerable<K> fullKeys)
+        {
+            if (partialKey == null) throw new ArgumentNullException();
+
+            if ((partMap.Count == 0) || !partMap.TryGetValue(partialKey, out fullKeys))
+            {
+                fullKeys = default(ISet<K>);
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
@@ -359,22 +330,24 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         internal protected virtual void AddPartial(K key)
         {
-            int i = 0;
-
             foreach (T subKey in key)
             {
-                partMap.Add(subKey, i++, key);
+                partMap.Add(subKey, key);
             }
         }
 
         internal protected virtual void DeletePartial(K key)
         {
-            int i = 0;
-
             foreach (T subKey in key)
             {
-                partMap.Remove(subKey, i++, key);
+                partMap.Remove(subKey, key);
             }
+        }
+
+
+        internal protected virtual void ClearPartial()
+        {
+                partMap.Clear();
         }
 
         #endregion
@@ -423,9 +396,10 @@ namespace GitHub.Protobufel.MultiKeyMap
         public virtual void Clear()
         {
             fullMap.Clear();
+            ClearPartial();
         }
 
-        public virtual bool Contains(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Contains(KeyValuePair<K, V> item)
         {
             return fullMap.Contains(item);
         }
@@ -435,7 +409,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return fullMap.ContainsKey(key);
         }
 
-        public virtual void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
             fullMap.CopyTo(array, arrayIndex);
         }
@@ -451,7 +425,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        public virtual bool Remove(KeyValuePair<K, V> item)
+        bool ICollection<KeyValuePair<K, V>>.Remove(KeyValuePair<K, V> item)
         {
             if (fullMap.Remove(item))
             {
@@ -475,6 +449,18 @@ namespace GitHub.Protobufel.MultiKeyMap
         IEnumerator IEnumerable.GetEnumerator()
         {
             return fullMap.GetEnumerator();
+        }
+
+        protected virtual void OnDeserializedHelper(StreamingContext context)
+        {
+            (fullMap as IDeserializationCallback).OnDeserialization(null);
+
+            partMap = CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
+
+            foreach (var entry in fullMap)
+            {
+                AddPartial(entry.Key);
+            }
         }
     }
 }

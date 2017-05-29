@@ -16,7 +16,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="partialKey">The combination of the sub-keys to search for.</param>
         /// <param name="values">A non-live non-empty sequence of the values satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out ICollection<V> values);
+        bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, out IEnumerable<V> values);
 
         /// <summary>
         /// Gets all KeyValuePairs for which their full keys contain the partial key set in any order.
@@ -24,7 +24,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="partialKey">The combination of the sub-keys to search for.</param>
         /// <param name="entries">A non-live non-empty sequence of the KeyValuePair(-s) satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetEntriesByPartialKey(IEnumerable<T> partialKey, out ICollection<KeyValuePair<K, V>> entries);
+        bool TryGetEntriesByPartialKey(IEnumerable<T> partialKey, out IEnumerable<KeyValuePair<K, V>> entries);
 
         /// <summary>
         /// Gets all full keys that contain the partial key set in any order.
@@ -32,7 +32,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="partialKey">The combination of the sub-keys to search for.</param>
         /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, out ISet<K> fullKeys);
+        bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, out IEnumerable<K> fullKeys);
 
         /// <summary>
         /// Gets all values  for which their full keys contain the partial key set in any order.
@@ -43,7 +43,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="values">A non-live non-empty sequence of the values satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetValuesByPartialKey(IList<T> partialKey, IList<int> positions, out ICollection<V> values);
+        bool TryGetValuesByPartialKey(IEnumerable<T> partialKey, IEnumerable<int> positions, out IEnumerable<V> values);
 
         /// <summary>
         /// Gets all KeyValuePairs for which their full keys contain the partial key set in any order.
@@ -54,7 +54,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="entries">A non-live non-empty sequence of the KeyValuePair(-s) satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetEntriesByPartialKey(IList<T> partialKey, IList<int> positions, out ICollection<KeyValuePair<K, V>> entries);
+        bool TryGetEntriesByPartialKey(IEnumerable<T> partialKey, IEnumerable<int> positions, out IEnumerable<KeyValuePair<K, V>> entries);
 
         /// <summary>
         /// Gets all full keys that contain the partial key set in any order.
@@ -65,7 +65,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// the partialKey list, meaning the rest of the partialKey sub-keys are non-positional.</param>
         /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        bool TryGetFullKeysByPartialKey(IList<T> partialKey, IList<int> positions, out ISet<K> fullKeys);
+        bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, IEnumerable<int> positions, out IEnumerable<K> fullKeys);
 
         /// <summary>
         /// Adds new value for the specified full key with the corresponding positions for each of its sub-keys.

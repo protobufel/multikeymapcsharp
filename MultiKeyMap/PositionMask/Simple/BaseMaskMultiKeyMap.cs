@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace GitHub.Protobufel.MultiKeyMap
+namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 {
     [Serializable]
-    internal abstract class BaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<ISubKeyMask<T>, IKeyMask<T, K>, V> where K : IEnumerable<T>
+    internal abstract class BaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<ISubKeyMask<T>, K, V> where K : IEnumerable<T>, IEnumerable<ISubKeyMask<T>>
     {
         protected const float CostRatioOfNewJoinOp = 2.0F;
 
@@ -23,6 +23,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         protected abstract bool IsSubKeyPosition(ISubKeyMask<T> subKeyMask);
         protected abstract bool TryGetPositions(T subKey, out IBitList positionMask);
         protected abstract void ClearSubKeyPositions();
+
 
         protected virtual bool RegisterSubKeyPosition(ISubKeyMask<T> subKeyMask)
         {
@@ -75,12 +76,12 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of
         /// the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
-        public override bool TryGetFullKeysByPartialKey(IEnumerable<ISubKeyMask<T>> subKeys, IEnumerable<int> positions, out IEnumerable<IKeyMask<T, K>> fullKeys)
+        public override bool TryGetFullKeysByPartialKey(IList<ISubKeyMask<T>> subKeys, IList<int> positions, out ISet<IKeyMask<T, K>> fullKeys)
         {
             return base.TryGetFullKeysByPartialKey(subKeys, out fullKeys);
         }
 
-        public override bool TryGetFullKeysByPartialKey(IEnumerable<ISubKeyMask<T>> subKeys, out IEnumerable<IKeyMask<T, K>> fullKeys)
+        public override bool TryGetFullKeysByPartialKey(IEnumerable<ISubKeyMask<T>> subKeys, out ISet<IKeyMask<T, K>> fullKeys)
         {
             if (subKeys == null) throw new ArgumentNullException("subKeys");
 
@@ -103,7 +104,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 {
                     if (!partMap.TryGetValue(subKeyMask, out ISet<IKeyMask<T, K>> value))
                     {
-                        fullKeys = default(IEnumerable<IKeyMask<T, K>>);
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
                         return false;
                     }
 
@@ -119,7 +120,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 {
                     if (!TryGetPositions(subKeyMask.SubKey, out IBitList positionMask))
                     {
-                        fullKeys = default(IEnumerable<IKeyMask<T, K>>);
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
                         return false;
                     }
                     else
@@ -139,7 +140,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                                 if (!partMap.TryGetValue(new SubKeyMask<T>(subKey, i), out ISet<IKeyMask<T, K>> value))
                                 {
                                     // we shouldn't be getting here in the normal circumstances!
-                                    fullKeys = default(IEnumerable<IKeyMask<T, K>>);
+                                    fullKeys = default(ISet<IKeyMask<T, K>>);
                                     return false;
                                 }
 
@@ -191,7 +192,7 @@ namespace GitHub.Protobufel.MultiKeyMap
                 {
                     if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
                     {
-                        fullKeys = default(IEnumerable<IKeyMask<T, K>>);
+                        fullKeys = default(ISet<IKeyMask<T, K>>);
                         return false;
                     }
                 }
@@ -199,7 +200,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
             if (resultSet.Count == 0)
             {
-                fullKeys = default(IEnumerable<IKeyMask<T, K>>);
+                fullKeys = default(ISet<IKeyMask<T, K>>);
                 return false;
             }
 
