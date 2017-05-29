@@ -338,7 +338,7 @@ namespace MultiKeyMapTests
         {
             IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
 
-            bool actualReturn = queryMap1.TryGetValuesByPartialKey(partialKey, out ICollection<V> actualOut);
+            bool actualReturn = queryMap1.TryGetValuesByPartialKey(partialKey, out IEnumerable<V> actualOut);
 
             actualReturn.Should().Be(expectedOut != default(ICollection<V>));
             actualOut.ShouldAllBeEquivalentTo(expectedOut);
@@ -348,7 +348,7 @@ namespace MultiKeyMapTests
         {
             IEnumerable<(int position, T subKey)> partialKey = subKeys.Zip(positions, (key, pos) => (pos, key));
 
-            bool actualReturn = queryMap1.TryGetEntriesByPartialKey(partialKey, out ICollection<KeyValuePair<K, V>> actualOut);
+            bool actualReturn = queryMap1.TryGetEntriesByPartialKey(partialKey, out IEnumerable<KeyValuePair<K, V>> actualOut);
 
             actualReturn.Should().Be(expectedOut != default(ICollection<KeyValuePair<K, V>>));
             actualOut.ShouldAllBeEquivalentTo(expectedOut);

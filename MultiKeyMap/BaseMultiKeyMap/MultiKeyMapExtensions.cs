@@ -116,10 +116,10 @@ namespace GitHub.Protobufel.MultiKeyMap.Extensions
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetValuesByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out ICollection<V> values) where K : IEnumerable<T>
+            out IEnumerable<V> values) where K : IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
-            return me.TryGetValuesByPartialKey(partialKey.Select(t => t.subkey).ToList(), partialKey.Select(t => t.position).ToList(), out values);
+            return me.TryGetValuesByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out values);
         }
 
         /// <summary>
@@ -133,10 +133,10 @@ namespace GitHub.Protobufel.MultiKeyMap.Extensions
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetEntriesByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out ICollection<KeyValuePair<K, V>> entries) where K : IEnumerable<T>
+            out IEnumerable<KeyValuePair<K, V>> entries) where K : IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
-            return me.TryGetEntriesByPartialKey(partialKey.Select(t => t.subkey).ToList(), partialKey.Select(t => t.position).ToList(), out entries);
+            return me.TryGetEntriesByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out entries);
         }
 
         /// <summary>
@@ -150,10 +150,10 @@ namespace GitHub.Protobufel.MultiKeyMap.Extensions
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetFullKeysByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out ISet<K> fullKeys) where K : IEnumerable<T>
+            out IEnumerable<K> fullKeys) where K : IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
-            return me.TryGetFullKeysByPartialKey(partialKey.Select(t => t.subkey).ToList(), partialKey.Select(t => t.position).ToList(), out fullKeys);
+            return me.TryGetFullKeysByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out fullKeys);
         }
     }
 }

@@ -13,22 +13,21 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
         protected const float CostRatioOfNewJoinOp = 2.0F;
 
         internal protected IDictionary<K, V> fullMap;
-        [NonSerialized]
-        internal protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
-
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
         protected BaseMultiKeyMap() { }
 
         protected BaseMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
-            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null)
+            IDictionary<K, V> fullMap = null)
         {
             this.subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
             this.fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
             this.fullMap = fullMap ?? CreateDictionary<K, V>(fullKeyComparer);
-            this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
         }
+
+
+        public abstract bool TryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, out IEnumerable<K> fullKeys);
 
         #region SubKey Positions abstract hooks
 
@@ -50,6 +49,16 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
         #endregion
 
 
+        #region Implementation of the partial map helpers
+
+        protected abstract void AddPartial(K key);
+
+        protected abstract void DeletePartial(K key);
+
+        protected abstract void ClearPartial();
+
+        #endregion
+
         protected abstract IDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer);
 
         protected virtual IDictionary<TKey, TValue> CreateSupportDictionary<TKey, TValue>(IEqualityComparer<TKey> comparer)
@@ -57,17 +66,16 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return CreateDictionary<TKey, TValue>(comparer);
         }
 
-        protected virtual ILiteSetMultimap<ISubKeyMask<TSubKey>, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
-            IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
-            where TKey : IEnumerable<TSubKey>
-        {
-            return CreateSupportDictionary<ISubKeyMask<TSubKey>, ISet<TKey>>(subKeyComparer.ToSubKeyMaskComparer())
-                .ToSetMultimap(fullKeyComparer);
-        }
+        //protected virtual ILiteSetMultimap<ISubKeyMask<TSubKey>, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
+        //    IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
+        //    where TKey : IEnumerable<TSubKey>
+        //{
+        //    return CreateSupportDictionary<ISubKeyMask<TSubKey>, ISet<TKey>>(subKeyComparer.ToSubKeyMaskComparer())
+        //        .ToSetMultimap(fullKeyComparer);
+        //}
 
         protected virtual IEqualityComparer<K> FullKeyComparer => fullKeyComparer;
         protected virtual IEqualityComparer<T> SubKeyComparer => subKeyComparer;
-        protected virtual IEqualityComparer<ISubKeyMask<T>> SubKeyMaskComparer => subKeyComparer.ToSubKeyMaskComparer();
 
         #region non-positional TryGetsByPartialKey
 
@@ -190,138 +198,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return true;
         }
 
-        public virtual bool TryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, out IEnumerable<K> fullKeys)
-        {
-            if (subKeys == null) throw new ArgumentNullException("subKeys");
-
-            if (!subKeys.Any())
-            {
-                fullKeys = default(IEnumerable<K>);
-                return false;
-            }
-
-            IList<ISet<K>> sets = new List<ISet<K>>();
-            IList<IEnumerable<ISet<K>>> colSets = new List<IEnumerable<ISet<K>>>();
-
-            IList<int> positionList = positions as IList<int> ?? positions.ToList();
-            IList<T> subKeyList = subKeys as IList<T> ?? subKeys.ToList();
-            //BitArray positionSet = positions.ToBitArray();
-            int minSize = int.MaxValue;
-            IEnumerable minSubResult = null;
-            int i = 0;
-
-            foreach (var subKey in subKeyList)
-            {
-                int position = GetAtOrNegative(positionList, i++);
-
-                if (position >= 0)
-                {
-                    if (!partMap.TryGetValue(subKey.ToSubKeyMask(position), out ISet<K> value))
-                    {
-                        fullKeys = default(IEnumerable<K>);
-                        return false;
-                    }
-
-                    if (value.Count < minSize)
-                    {
-                        minSize = value.Count;
-                        minSubResult = value;
-                    }
-
-                    sets.Add(value);
-                }
-                else
-                {
-                    if (!TryGetPositions(subKey, out IBitList positionMask))
-                    {
-                        fullKeys = default(IEnumerable<K>);
-                        return false;
-                    }
-                    else
-                    {
-                        IList<ISet<K>> colSet = new List<ISet<K>>();
-
-                        int j = -1;
-                        int count = 0;
-
-                        foreach (bool posExists in positionMask)
-                        {
-                            j++;
-
-                            if (posExists)
-                            {
-                                if (!partMap.TryGetValue(subKey.ToSubKeyMask(j), out ISet<K> value))
-                                {
-                                    // we shouldn't be getting here in the normal circumstances!
-                                    fullKeys = default(IEnumerable<K>);
-                                    return false;
-                                }
-
-                                count += value.Count;
-                                colSet.Add(value);
-                            }
-                        }
-
-                        if (count < minSize)
-                        {
-                            minSize = count;
-                            minSubResult = colSet;
-                        }
-
-                        colSets.Add(colSet);
-                    }
-                }
-            }
-
-            HashSet<K> resultSet = ToSet<K>(minSubResult);
-
-            if ((sets.Count + colSets.Count) == 1)
-            {
-                fullKeys = resultSet;
-                return true;
-            }
-
-            //prefer sets to colSets!
-            if (sets.Count > 0)
-            {
-                foreach (var set in sets)
-                {
-                    if (!ReferenceEquals(set, minSubResult)) // check by reference!
-                    {
-                        resultSet.IntersectWith(set);
-
-                        if (resultSet.Count == 0)
-                        {
-                            fullKeys = default(IEnumerable<K>);
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            if (colSets.Count > 0)
-            {
-                foreach (var colSet in colSets)
-                {
-                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
-                    {
-                        fullKeys = default(IEnumerable<K>);
-                        return false;
-                    }
-                }
-            }
-
-            if (resultSet.Count == 0)
-            {
-                fullKeys = default(IEnumerable<K>);
-                return false;
-            }
-
-            fullKeys = resultSet;
-            return true;
-        }
-
-        private int GetAtOrNegative(IList<int> positionList, int pos)
+        protected virtual int GetAtOrNegative(IList<int> positionList, int pos)
         {
             return pos < positionList.Count ? positionList[pos] : -1;
         }
@@ -381,7 +258,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return (set.Count > 0);
         }
 
-        private bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
+        protected virtual bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
         {
             long secondSize = 0;
             int secondCount = 0;
@@ -395,7 +272,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return (CostRatioOfNewJoinOp * secondSize) > ((first.Count - 1) * secondCount);
         }
 
-        private bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
+        protected virtual bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
         {
             bool first = true;
             result = null;
@@ -416,36 +293,6 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
             return (result != null) && (result.Count > 0);
         }
 
-
-        #endregion
-
-        #region Implementation of the partial map helpers
-
-        internal protected virtual void AddPartial(K key)
-        {
-            int i = 0;
-
-            foreach (T subKey in key)
-            {
-                partMap.Add(subKey.ToSubKeyMask(i++), key);
-            }
-        }
-
-        internal protected virtual void DeletePartial(K key)
-        {
-            int i = 0;
-
-            foreach (T subKey in key)
-            {
-                partMap.Remove(subKey.ToSubKeyMask(i++), key);
-            }
-        }
-
-
-        internal protected virtual void ClearPartial()
-        {
-                partMap.Clear();
-        }
 
         #endregion
 
@@ -551,13 +398,6 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
         protected virtual void OnDeserializedHelper(StreamingContext context)
         {
             (fullMap as IDeserializationCallback).OnDeserialization(null);
-
-            partMap = CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
-
-            foreach (var entry in fullMap)
-            {
-                AddPartial(entry.Key);
-            }
         }
     }
 }
