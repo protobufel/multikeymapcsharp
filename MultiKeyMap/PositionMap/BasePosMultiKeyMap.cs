@@ -11,9 +11,9 @@ namespace GitHub.Protobufel.MultiKeyMap
     {
         private const float CostRatioOfNewJoinOp = 2.0F;
 
-        internal protected IDictionary<K, V> fullMap;
+        protected IDictionary<K, V> fullMap;
         [NonSerialized]
-        internal protected IPosSetMultimap<T, K> partMap;
+        protected IPosSetMultimap<T, K> partMap;
 
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
@@ -357,7 +357,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         #region Implementation of the partial map helpers
 
-        internal protected virtual void AddPartial(K key)
+        protected virtual void AddPartial(K key)
         {
             int i = 0;
 
@@ -367,7 +367,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        internal protected virtual void DeletePartial(K key)
+        protected virtual void DeletePartial(K key)
         {
             int i = 0;
 

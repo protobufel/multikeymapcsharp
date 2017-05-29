@@ -8,21 +8,36 @@ using GitHub.Protobufel.MultiKeyMap.LiteSetMultimapExtensions;
 namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 {
     [Serializable]
-    internal abstract class BaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class PositionalBaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
         [NonSerialized]
-        internal protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
+        protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
 
-        protected BaseMaskMultiKeyMap() { }
-
-        protected BaseMaskMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
-            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null)
+        protected PositionalBaseMaskMultiKeyMap(IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null,
+            IDictionary<K, V> fullMap = null, ILiteSetMultimap<ISubKeyMask<T>, K> partMap = null) 
+            : base(subKeyComparer, fullKeyComparer, fullMap)
         {
-            this.subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
-            this.fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
-            this.fullMap = fullMap ?? CreateDictionary<K, V>(fullKeyComparer);
             this.partMap = partMap ?? CreateLiteSetMultimap(subKeyComparer, fullKeyComparer);
         }
+
+        #region SubKey Positions abstract hooks
+
+        protected abstract bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask);
+        protected abstract bool RemoveSubKeyPosition(ISubKeyMask<T> subKeyMask, out bool removedEntireSubKey);
+        protected abstract bool IsSubKeyPosition(ISubKeyMask<T> subKeyMask);
+        protected abstract bool TryGetPositions(T subKey, out IBitList positionMask);
+        protected abstract void ClearSubKeyPositions();
+
+
+        protected virtual bool RegisterSubKeyPosition(ISubKeyMask<T> subKeyMask)
+        {
+            if (IsSubKeyPosition(subKeyMask)) return false;
+
+            AddSubKeyPosition(subKeyMask);
+            return true;
+        }
+
+        #endregion
 
         protected virtual ILiteSetMultimap<ISubKeyMask<TSubKey>, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
             IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
@@ -185,7 +200,6 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
                 partMap.Remove(subKey.ToSubKeyMask(i++), key);
             }
         }
-
 
         protected override void ClearPartial()
         {

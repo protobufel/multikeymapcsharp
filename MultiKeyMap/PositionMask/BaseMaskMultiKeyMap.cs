@@ -36,7 +36,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         #region Implementation of the partial map helpers
 
-        internal protected override void AddPartial(IKeyMask<T, K> key)
+        protected override void AddPartial(IKeyMask<T, K> key)
         {
             foreach (var subKeyMask in key)
             {
@@ -45,7 +45,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        internal protected override void DeletePartial(IKeyMask<T, K> key)
+        protected override void DeletePartial(IKeyMask<T, K> key)
         {
             foreach (var subKeyMask in key)
             {
@@ -56,7 +56,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        protected internal override void ClearPartial()
+        protected override void ClearPartial()
         {
             base.ClearPartial();
             ClearSubKeyPositions();

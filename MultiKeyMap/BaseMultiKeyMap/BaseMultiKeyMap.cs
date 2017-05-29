@@ -10,9 +10,9 @@ namespace GitHub.Protobufel.MultiKeyMap
     [Serializable]
     internal abstract class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
     {
-        internal protected IDictionary<K, V> fullMap;
+        protected IDictionary<K, V> fullMap;
         [NonSerialized]
-        internal protected ILiteSetMultimap<T, K> partMap;
+        protected ILiteSetMultimap<T, K> partMap;
 
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
@@ -311,7 +311,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return pos < positionList.Count ? positionList[pos] : -1;
         }
 
-        internal protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
+        protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
         {
             if (source.Count == 0)
             {
@@ -347,7 +347,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         #endregion
         #region single sub-key TryGet queries
 
-        internal protected virtual bool TryGetValuesByPartialKey(T partialKey, out IEnumerable<V> values)
+        protected virtual bool TryGetValuesByPartialKey(T partialKey, out IEnumerable<V> values)
         {
             if (TryGetFullKeysByPartialKey(partialKey, out IEnumerable<K> fullKeys))
             {
@@ -359,7 +359,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        internal protected virtual bool TryGetEntriesByPartialKey(T partialKey, out IEnumerable<KeyValuePair<K, V>> entries)
+        protected virtual bool TryGetEntriesByPartialKey(T partialKey, out IEnumerable<KeyValuePair<K, V>> entries)
         {
             if (TryGetFullKeysByPartialKey(partialKey, out IEnumerable<K> fullKeys))
             {
@@ -372,7 +372,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             return false;
         }
 
-        internal protected virtual bool TryGetFullKeysByPartialKey(T partialKey, out IEnumerable<K> fullKeys)
+        protected virtual bool TryGetFullKeysByPartialKey(T partialKey, out IEnumerable<K> fullKeys)
         {
             if (partialKey == null) throw new ArgumentNullException();
 
@@ -390,7 +390,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         #region Implementation of the partial map helpers
 
-        internal protected virtual void AddPartial(K key)
+        protected virtual void AddPartial(K key)
         {
             foreach (T subKey in key)
             {
@@ -398,7 +398,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             }
         }
 
-        internal protected virtual void DeletePartial(K key)
+        protected virtual void DeletePartial(K key)
         {
             foreach (T subKey in key)
             {
@@ -407,7 +407,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         }
 
 
-        internal protected virtual void ClearPartial()
+        protected virtual void ClearPartial()
         {
                 partMap.Clear();
         }

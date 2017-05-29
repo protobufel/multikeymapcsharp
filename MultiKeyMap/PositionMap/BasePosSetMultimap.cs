@@ -18,7 +18,7 @@ namespace GitHub.Protobufel.MultiKeyMap
             this.valueComparer = valueComparer;
         }
 
-        internal protected virtual PosLiteSetMultimap<V> CreateLiteSetMultimap()
+        protected virtual PosLiteSetMultimap<V> CreateLiteSetMultimap()
         {
             return new PosLiteSetMultimap<V>(new Dictionary<int, ISet<V>>(), valueComparer);
         }

@@ -12,7 +12,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
     {
         protected const float CostRatioOfNewJoinOp = 2.0F;
 
-        internal protected IDictionary<K, V> fullMap;
+        protected IDictionary<K, V> fullMap;
         protected internal IEqualityComparer<K> fullKeyComparer;
         protected internal IEqualityComparer<T> subKeyComparer;
 
@@ -28,26 +28,6 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask.Simple
 
 
         public abstract bool TryGetFullKeysByPartialKey(IEnumerable<T> subKeys, IEnumerable<int> positions, out IEnumerable<K> fullKeys);
-
-        #region SubKey Positions abstract hooks
-
-        protected abstract bool AddSubKeyPosition(ISubKeyMask<T> subKeyMask);
-        protected abstract bool RemoveSubKeyPosition(ISubKeyMask<T> subKeyMask, out bool removedEntireSubKey);
-        protected abstract bool IsSubKeyPosition(ISubKeyMask<T> subKeyMask);
-        protected abstract bool TryGetPositions(T subKey, out IBitList positionMask);
-        protected abstract void ClearSubKeyPositions();
-
-
-        protected virtual bool RegisterSubKeyPosition(ISubKeyMask<T> subKeyMask)
-        {
-            if (IsSubKeyPosition(subKeyMask)) return false;
-
-            AddSubKeyPosition(subKeyMask);
-            return true;
-        }
-
-        #endregion
-
 
         #region Implementation of the partial map helpers
 
