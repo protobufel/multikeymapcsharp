@@ -69,11 +69,6 @@ namespace GitHub.Protobufel.MultiKeyMap.CollectionWrappers
 
         protected virtual IMultiKeyMap<T2, K2, V2> Source => source as IMultiKeyMap<T2, K2, V2>;
 
-        public virtual void Add(K1 key, V1 value, IEnumerable<bool> positions)
-        {
-            Source.Add(key.To(keySelector2), value.To(valueSelector2), positions);
-        }
-
         public virtual bool TryGetEntriesByPartialKey(IEnumerable<T1> partialKey, out IEnumerable<KeyValuePair<K1, V1>> entries)
         {
             if (Source.TryGetEntriesByPartialKey(partialKey.Select(x => x.To(subKeySelector2)), out var entries2))

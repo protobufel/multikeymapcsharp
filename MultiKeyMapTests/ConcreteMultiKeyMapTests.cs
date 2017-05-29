@@ -190,24 +190,24 @@ namespace MultiKeyMapTests
             helper4.AssertAdd();
         }
 
-        [DataTestMethod]
-        [DataRow(OptimizedForPositionalSearch, BothNull)]
-        [DataRow(OptimizedForPositionalSearch, BothDefault)]
-        [DataRow(OptimizedForPositionalSearch, StructuralBoth)]
-        [DataRow(OptimizedForPositionalSearch, StructuralFullKeyOnly)]
-        [DataRow(OptimizedForNonPositionalSearch, BothNull)]
-        [DataRow(OptimizedForNonPositionalSearch, BothDefault)]
-        [DataRow(OptimizedForNonPositionalSearch, StructuralBoth)]
-        [DataRow(OptimizedForNonPositionalSearch, StructuralFullKeyOnly)]
-        public void AddWithPositionsTest(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
-        {
-            InitAll(strategy, compStrategy);
+        //[DataTestMethod]
+        //[DataRow(OptimizedForPositionalSearch, BothNull)]
+        //[DataRow(OptimizedForPositionalSearch, BothDefault)]
+        //[DataRow(OptimizedForPositionalSearch, StructuralBoth)]
+        //[DataRow(OptimizedForPositionalSearch, StructuralFullKeyOnly)]
+        //[DataRow(OptimizedForNonPositionalSearch, BothNull)]
+        //[DataRow(OptimizedForNonPositionalSearch, BothDefault)]
+        //[DataRow(OptimizedForNonPositionalSearch, StructuralBoth)]
+        //[DataRow(OptimizedForNonPositionalSearch, StructuralFullKeyOnly)]
+        //public void AddWithPositionsTest(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
+        //{
+        //    InitAll(strategy, compStrategy);
 
-            helper1.AssertAddWithPositions();
-            helper2.AssertAddWithPositions();
-            helper3.AssertAddWithPositions();
-            helper4.AssertAddWithPositions();
-        }
+        //    helper1.AssertAddWithPositions();
+        //    helper2.AssertAddWithPositions();
+        //    helper3.AssertAddWithPositions();
+        //    helper4.AssertAddWithPositions();
+        //}
 
         [DataTestMethod]
         [DataRow(OptimizedForPositionalSearch, BothNull)]

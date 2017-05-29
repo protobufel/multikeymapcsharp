@@ -67,16 +67,5 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="fullKeys">A non-live non-empty set of the full keys satisfying the partial key criteria, or the default value of the result type if not found.</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         bool TryGetFullKeysByPartialKey(IEnumerable<T> partialKey, IEnumerable<int> positions, out IEnumerable<K> fullKeys);
-
-        /// <summary>
-        /// Adds new value for the specified full key with the corresponding positions for each of its sub-keys.
-        /// </summary>
-        /// <param name="key">The full key for the new record</param>
-        /// <param name="value">The value for the new record</param>
-        /// <param name="positions">The sequence of the sub-key positions corresponding to the full key, wherein <code>true</code> signifies the positional 
-        /// sub-key to search exactly in its position, otherwise, <code>false</code>. The size of this list can be smaller than 
-        /// the full key list, meaning the rest of the sub-keys are non-positional.</param>
-        [Obsolete("NOOP, not being used by any algorithm strategy, at least, yet!", false)]
-        void Add(K key, V value, IEnumerable<bool> positions);
     }
 }
