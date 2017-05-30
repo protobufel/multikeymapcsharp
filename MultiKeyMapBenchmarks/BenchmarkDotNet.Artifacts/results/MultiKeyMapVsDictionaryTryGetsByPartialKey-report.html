@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>MultiKeyMapVsDictionaryTryGetsByPartialKey</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.10.6, OS=Windows 10 Redstone 2 (10.0.15063)
+Processor=Intel Core i7-4790 CPU 3.60GHz (Haswell), ProcessorCount=8
+Frequency=3507520 Hz, Resolution=285.1017 ns, Timer=TSC
+dotnet cli version=1.0.4
+  [Host]     : .NET Core 4.6.25211.01, 64bit RyuJIT
+  DefaultJob : .NET Core 4.6.25211.01, 64bit RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>                                           Method</th><th>                 Strategy</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Scaled</th><th>ScaledSD</th><th>Gen 0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>           MultiKeyMap_TryGetFullKeysByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>204.52 us</td><td>1.8742 us</td><td>1.7532 us</td><td>203.72 us</td><td>14.84</td><td>0.29</td><td>32.9590</td><td>135.84 KB</td>
+</tr><tr><td>             MultiKeyMap_TryGetValuesByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>204.74 us</td><td>0.7252 us</td><td>0.6784 us</td><td>204.41 us</td><td>14.86</td><td>0.26</td><td>32.9590</td><td>135.84 KB</td>
+</tr><tr><td>MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>200.91 us</td><td>1.6190 us</td><td>1.4352 us</td><td>200.10 us</td><td>14.58</td><td>0.27</td><td>35.8887</td><td>147.56 KB</td>
+</tr><tr><td>MultiKeyMap_Mixed_PositionalTryGetValuesByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>207.27 us</td><td>4.0599 us</td><td>5.8226 us</td><td>203.71 us</td><td>15.04</td><td>0.49</td><td>35.8887</td><td>147.56 KB</td>
+</tr><tr><td>MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>162.87 us</td><td>0.3314 us</td><td>0.2767 us</td><td>162.84 us</td><td>11.82</td><td>0.21</td><td>32.2266</td><td>132.07 KB</td>
+</tr><tr><td>MultiKeyMap_Only_PositionalTryGetValuesByPartialKey</td><td>OptimizedForNonPositionalSearch</td><td>165.07 us</td><td>1.0708 us</td><td>1.0016 us</td><td>164.73 us</td><td>11.98</td><td>0.22</td><td>32.2266</td><td>132.07 KB</td>
+</tr><tr><td>                           Dictionary_TryGetValue</td><td>OptimizedForNonPositionalSearch</td><td>13.79 us</td><td>0.2647 us</td><td>0.2476 us</td><td>13.82 us</td><td>1.00</td><td>0.00</td><td>1.1444</td><td>4.75 KB</td>
+</tr><tr><td>           MultiKeyMap_TryGetFullKeysByPartialKey</td><td>OptimizedForPositionalSearch</td><td>730.12 us</td><td>2.3554 us</td><td>1.9669 us</td><td>730.71 us</td><td>54.32</td><td>0.16</td><td>161.1328</td><td>662.45 KB</td>
+</tr><tr><td>             MultiKeyMap_TryGetValuesByPartialKey</td><td>OptimizedForPositionalSearch</td><td>732.36 us</td><td>2.4165 us</td><td>2.0178 us</td><td>731.92 us</td><td>54.48</td><td>0.16</td><td>161.1328</td><td>662.45 KB</td>
+</tr><tr><td>MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey</td><td>OptimizedForPositionalSearch</td><td>654.71 us</td><td>2.0868 us</td><td>1.8499 us</td><td>655.24 us</td><td>48.71</td><td>0.15</td><td>150.3906</td><td>616.36 KB</td>
+</tr><tr><td>MultiKeyMap_Mixed_PositionalTryGetValuesByPartialKey</td><td>OptimizedForPositionalSearch</td><td>668.74 us</td><td>6.1855 us</td><td>5.7859 us</td><td>665.91 us</td><td>49.75</td><td>0.42</td><td>150.3906</td><td>616.36 KB</td>
+</tr><tr><td>MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey</td><td>OptimizedForPositionalSearch</td><td>335.80 us</td><td>4.7577 us</td><td>4.4504 us</td><td>335.31 us</td><td>24.98</td><td>0.32</td><td>74.2188</td><td>305.53 KB</td>
+</tr><tr><td>MultiKeyMap_Only_PositionalTryGetValuesByPartialKey</td><td>OptimizedForPositionalSearch</td><td>338.06 us</td><td>1.0295 us</td><td>0.9127 us</td><td>337.72 us</td><td>25.15</td><td>0.07</td><td>74.2188</td><td>305.53 KB</td>
+</tr><tr><td>                           Dictionary_TryGetValue</td><td>OptimizedForPositionalSearch</td><td>13.44 us</td><td>0.0222 us</td><td>0.0173 us</td><td>13.45 us</td><td>1.00</td><td>0.00</td><td>1.1444</td><td>4.75 KB</td>
+</tr></tbody></table>
+</body>
+</html>
