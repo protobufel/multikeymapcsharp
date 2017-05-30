@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiKeyMapTests", "MultiKe
 		{0F56D0D4-7D22-45E2-9DF3-79B5244F5603} = {0F56D0D4-7D22-45E2-9DF3-79B5244F5603}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiKeyMapBenchmarks", "MultiKeyMapBenchmarks\MultiKeyMapBenchmarks.csproj", "{8A6B5E26-A765-4F7F-AA05-9E4052C14A66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,8 +31,12 @@ Global
 		{0F56D0D4-7D22-45E2-9DF3-79B5244F5603}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE5E8972-669E-4905-8046-0C02A7154EED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FE5E8972-669E-4905-8046-0C02A7154EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE5E8972-669E-4905-8046-0C02A7154EED}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE5E8972-669E-4905-8046-0C02A7154EED}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{FE5E8972-669E-4905-8046-0C02A7154EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE5E8972-669E-4905-8046-0C02A7154EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A6B5E26-A765-4F7F-AA05-9E4052C14A66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A6B5E26-A765-4F7F-AA05-9E4052C14A66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A6B5E26-A765-4F7F-AA05-9E4052C14A66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A6B5E26-A765-4F7F-AA05-9E4052C14A66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

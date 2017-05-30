@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using GitHub.Protobufel.MultiKeyMap;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
+using static GitHub.Protobufel.MultiKeyMap.MultiKeyMaps.MultiKeyCreationStrategy;
 using static MultiKeyMapTests.CommonHelpers;
 using static MultiKeyMapTests.ConcreteMultiKeyMapTests.ComparersStrategy;
-using static GitHub.Protobufel.MultiKeyMap.MultiKeyMaps.MultiKeyCreationStrategy;
-using System.Linq;
 
 namespace MultiKeyMapTests
 {
