@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GitHub.Protobufel.MultiKeyMap.Base;
 using GitHub.Protobufel.MultiKeyMap.PositionMask;
 
 namespace GitHub.Protobufel.MultiKeyMap.PositionMap
@@ -66,7 +67,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMap
                 return false;
             }
 
-            var result  = new List<KeyValuePair<K, V>>();
+            var result = new List<KeyValuePair<K, V>>();
 
             foreach (K fullKey in fullKeys)
             {
@@ -245,10 +246,17 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMap
             {
                 foreach (var colSet in colSets)
                 {
-                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
+                    if (!ReferenceEquals(colSet, minSubResult)) // check by reference!
                     {
-                        fullKeys = default(ISet<K>);
-                        return false;
+                        if (!SetHelpers.IntersectWith(resultSet, colSet, out var newResultSet)) // check by reference!
+                        {
+                            fullKeys = default(ISet<K>);
+                            return false;
+                        }
+                        else
+                        {
+                            resultSet = newResultSet;
+                        }
                     }
                 }
             }
@@ -282,77 +290,6 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMap
                     throw new InvalidOperationException("unknown source type");
             }
         }
-
-        protected virtual bool IntersectWith<E>(HashSet<E> set, IEnumerable<ISet<E>> colSet)
-        {
-            if ((set.Count == 0) || !colSet.Any())
-            {
-                return false;
-            }
-
-            if (IsJoinMoreExpensive(set, colSet, CostRatioOfNewJoinOp))
-            {
-                //set.RemoveWhere(e => !colSet.Any(s => s.Contains(e)));
-                set.RemoveWhere(e =>
-                {
-                    foreach (var subSet in colSet)
-                    {
-                        if (subSet.Contains(e))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-            }
-            else
-            {
-                if (!TryJoinSets(colSet, out ISet<E> joinedSet))
-                {
-                    set.Clear();
-                    return false;
-                }
-            }
-
-            return (set.Count > 0);
-        }
-
-        private bool IsJoinMoreExpensive<E>(HashSet<E> first, IEnumerable<ISet<E>> second, float ratio)
-        {
-            long secondSize = 0;
-            int secondCount = 0;
-
-            foreach (var col in second)
-            {
-                secondSize += col.Count;
-                secondCount++;
-            }
-
-            return (CostRatioOfNewJoinOp * secondSize) > ((first.Count - 1) * secondCount);
-        }
-
-        private bool TryJoinSets<E>(IEnumerable<ISet<E>> sets, out ISet<E> result)
-        {
-            bool first = true;
-            result = null;
-
-            foreach (var set in sets)
-            {
-                if (first)
-                {
-                    first = false;
-                    result = new HashSet<E>(set);
-                }
-                else
-                {
-                    result.UnionWith(set);
-                }
-            }
-
-            return (result != null) && (result.Count > 0);
-        }
-
         #endregion
 
         #region Implementation of the partial map helpers

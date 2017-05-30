@@ -162,10 +162,17 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             {
                 foreach (var colSet in colSets)
                 {
-                    if (!ReferenceEquals(colSet, minSubResult) && !IntersectWith(resultSet, colSet)) // check by reference!
+                    if (!ReferenceEquals(colSet, minSubResult)) // check by reference!
                     {
-                        fullKeys = default(IEnumerable<K>);
-                        return false;
+                        if (!SetHelpers.IntersectWith(resultSet, colSet, out var newResultSet))
+                        {
+                            fullKeys = default(IEnumerable<K>);
+                            return false;
+                        }
+                        else
+                        {
+                            resultSet = newResultSet;
+                        }
                     }
                 }
             }
@@ -179,6 +186,27 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             fullKeys = resultSet;
             return true;
         }
+
+        protected virtual HashSet<E> ToSet<E>(IEnumerable source, IEqualityComparer<E> comparer = null)
+        {
+            switch (source)
+            {
+                case ISet<E> set:
+                    return new HashSet<E>(set, comparer);
+                case IEnumerable<ISet<E>> colSet:
+                    HashSet<E> result = new HashSet<E>(comparer);
+
+                    foreach (var set in colSet)
+                    {
+                        result.UnionWith(set);
+                    }
+
+                    return result;
+                default:
+                    throw new InvalidOperationException("unknown source type");
+            }
+        }
+
         #region Implementation of the partial map helpers
 
         protected override void AddPartial(K key)
