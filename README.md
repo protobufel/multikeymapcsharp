@@ -83,6 +83,8 @@ namespace MultiKeyMapExample
 }
 ```
 
+See the performance results at [MultiKeyMapBenchmarks/BenchmarkDotNet.Artifacts/results](https://github.com/protobufel/multikeymapcsharp/tree/master/MultiKeyMapBenchmarks/BenchmarkDotNet.Artifacts/results)
+
 Happy coding,
 
 David Tesler
