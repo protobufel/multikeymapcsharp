@@ -56,7 +56,8 @@ namespace MultiKeyMapBenchmarks
         public void Setup()
         {
             int count = 100;
-            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(x => new List<int>() { x, x + 1, x + 2 }).ToList();
+            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(
+                x => new List<int>() { x, x + 1, x + 2, x + 3, x + 4, x + 5, x + 6, x + 7, x + 8, x + 9 }).ToList();
             values = Enumerable.Range(1, count).Select<int, string>(x => String.Format("{0}", x)).ToList();
         }
 
@@ -67,7 +68,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IMultiKeyMap<int, IEnumerable<int>, string> MultiKeyMap_AddLoop()
+        public IMultiKeyMap<int, IEnumerable<int>, string> MultiKeyMap_Add()
         {
             Init();
 
@@ -80,7 +81,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark(Baseline = true)]
-        public IDictionary<IEnumerable<int>, string> Dictionary_AddLoop()
+        public IDictionary<IEnumerable<int>, string> Dictionary_Add()
         {
             Init();
 
@@ -110,7 +111,8 @@ namespace MultiKeyMapBenchmarks
         public void Setup()
         {
             int count = 100;
-            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(x => new List<int>() { x, x + 1, x + 2 }).ToList();
+            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(
+                x => new List<int>() { x, x + 1, x + 2, x + 3, x + 4, x + 5, x + 6, x + 7, x + 8, x + 9 }).ToList();
             values = Enumerable.Range(1, count).Select<int, string>(x => String.Format("{0}", x)).ToList();
         }
 
@@ -144,7 +146,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IMultiKeyMap<int, IEnumerable<int>, string> MultiKeyMap_RemoveLoop()
+        public IMultiKeyMap<int, IEnumerable<int>, string> MultiKeyMap_Remove()
         {
             Init();
 
@@ -157,7 +159,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark(Baseline = true)]
-        public IDictionary<IEnumerable<int>, string> Dictionary_RemoveLoop()
+        public IDictionary<IEnumerable<int>, string> Dictionary_Remove()
         {
             Init();
 
@@ -187,7 +189,8 @@ namespace MultiKeyMapBenchmarks
         public void Setup()
         {
             int count = 100;
-            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(x => new List<int>() { x, x + 1, x + 2 }).ToList();
+            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(
+                x => new List<int>() { x, x + 1, x + 2, x + 3, x + 4, x + 5, x + 6, x + 7, x + 8, x + 9 }).ToList();
             values = Enumerable.Range(1, count).Select<int, string>(x => String.Format("{0}", x)).ToList();
 
             Init();
@@ -223,7 +226,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IEnumerable<string> MultiKeyMap_TryGetValueLoop()
+        public IEnumerable<string> MultiKeyMap_TryGetValue()
         {
             var result = new List<string>(keys.Count);
 
@@ -240,7 +243,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark(Baseline = true)]
-        public IEnumerable<string> Dictionary_TryGetValueLoop()
+        public IEnumerable<string> Dictionary_TryGetValue()
         {
             var result = new List<string>(keys.Count);
 
@@ -269,6 +272,8 @@ namespace MultiKeyMapBenchmarks
         private IList<IEnumerable<int>> subKeys;
         private IEnumerable<int> positions;
 
+        private IEnumerable<int> positivePositions;
+
         private const int SearchCount = 100;
         private const int RecordCount = 1_000_000;
 
@@ -279,11 +284,14 @@ namespace MultiKeyMapBenchmarks
         public void Setup()
         {
             int count = 100;
-            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(x => new List<int>() { x, x + 1, x + 2 }).ToList();
+            keys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(
+                x => new List<int>() { x, x + 1, x + 2, x + 3, x + 4, x + 5, x + 6, x + 7, x + 8, x + 9 }).ToList();
             values = Enumerable.Range(1, count).Select<int, string>(x => String.Format("{0}", x)).ToList();
 
-            subKeys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(x => new List<int>() { x + 1, x + 2 }).ToList();
+            subKeys = Enumerable.Range(1, count).Select<int, IEnumerable<int>>(
+                x => new List<int>() { x + 1, x + 2, x + 5, x + 7, x + 8, x + 9 }).ToList();
             positions = new List<int>() { -1, 2 };
+            positivePositions = new List<int>() { 1, 2, 5, 7, 8, 9 };
 
             Init();
         }
@@ -318,7 +326,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<IEnumerable<int>>> MultiKeyMap_TryGetFullKeysByPartialKeyLoop()
+        public IEnumerable<IEnumerable<IEnumerable<int>>> MultiKeyMap_TryGetFullKeysByPartialKey()
         {
             var result = new List<IEnumerable<IEnumerable<int>>>(keys.Count);
 
@@ -335,7 +343,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<string>> MultiKeyMap_TryGetValuesByPartialKeyLoop()
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_TryGetValuesByPartialKey()
         {
             var result = new List<IEnumerable<string>>(keys.Count);
 
@@ -352,7 +360,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<IEnumerable<int>>> MultiKeyMap_PositionalTryGetFullKeysByPartialKeyLoop()
+        public IEnumerable<IEnumerable<IEnumerable<int>>> MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
         {
             var result = new List<IEnumerable<IEnumerable<int>>>(keys.Count);
 
@@ -369,7 +377,7 @@ namespace MultiKeyMapBenchmarks
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<string>> MultiKeyMap_PositionalTryGetValuesByPartialKeyLoop()
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_Mixed_PositionalTryGetValuesByPartialKey()
         {
             var result = new List<IEnumerable<string>>(keys.Count);
 
@@ -385,8 +393,42 @@ namespace MultiKeyMapBenchmarks
             return result;
         }
 
+        [Benchmark]
+        public IEnumerable<IEnumerable<IEnumerable<int>>> MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
+        {
+            var result = new List<IEnumerable<IEnumerable<int>>>(keys.Count);
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (map.TryGetFullKeysByPartialKey(keys[i], positivePositions, out var value))
+                {
+                    result.Add(value);
+                }
+
+            }
+
+            return result;
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_Only_PositionalTryGetValuesByPartialKey()
+        {
+            var result = new List<IEnumerable<string>>(keys.Count);
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (map.TryGetValuesByPartialKey(keys[i], positivePositions, out var value))
+                {
+                    result.Add(value);
+                }
+
+            }
+
+            return result;
+        }
+
         [Benchmark(Baseline = true)]
-        public IEnumerable<string> Dictionary_TryGetValueLoop()
+        public IEnumerable<string> Dictionary_TryGetValue()
         {
             var result = new List<string>(keys.Count);
 
