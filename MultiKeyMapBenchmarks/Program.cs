@@ -19,7 +19,6 @@ namespace MultiKeyMapBenchmarks
             var summary4 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetValue>();
             // var summary5 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000000rows100searches>();
             var summary6 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search>();
-
         }
     }
 

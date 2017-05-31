@@ -11,7 +11,7 @@ dotnet cli version=1.0.4
 ```
  |                      Method |                        Strategy |      Mean |     Error |    StdDev | Scaled | ScaledSD |  Gen 0 | Allocated |
  |---------------------------- |-------------------------------- |----------:|----------:|----------:|-------:|---------:|-------:|----------:|
- | **CreateDictionaryMultiKeyMap** | **OptimizedForNonPositionalSearch** | **161.13 ns** | **0.6697 ns** | **0.5936 ns** |   **9.55** |     **0.08** | **0.0627** |     **264 B** |
- |            CreateDictionary | OptimizedForNonPositionalSearch |  16.88 ns | 0.1433 ns | 0.1270 ns |   1.00 |     0.00 | 0.0190 |      80 B |
- | **CreateDictionaryMultiKeyMap** |    **OptimizedForPositionalSearch** | **204.40 ns** | **1.6882 ns** | **1.4965 ns** |  **11.88** |     **0.13** | **0.0894** |     **376 B** |
- |            CreateDictionary |    OptimizedForPositionalSearch |  17.21 ns | 0.1508 ns | 0.1410 ns |   1.00 |     0.00 | 0.0190 |      80 B |
+ | **CreateDictionaryMultiKeyMap** | **OptimizedForNonPositionalSearch** | **168.54 ns** | **1.1452 ns** | **1.0713 ns** |   **9.74** |     **0.09** | **0.0627** |     **264 B** |
+ |            CreateDictionary | OptimizedForNonPositionalSearch |  17.30 ns | 0.1213 ns | 0.1134 ns |   1.00 |     0.00 | 0.0190 |      80 B |
+ | **CreateDictionaryMultiKeyMap** |    **OptimizedForPositionalSearch** | **210.38 ns** | **0.9357 ns** | **0.7814 ns** |  **12.27** |     **0.09** | **0.0894** |     **376 B** |
+ |            CreateDictionary |    OptimizedForPositionalSearch |  17.15 ns | 0.1261 ns | 0.1118 ns |   1.00 |     0.00 | 0.0190 |      80 B |

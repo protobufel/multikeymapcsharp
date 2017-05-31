@@ -11,11 +11,11 @@ dotnet cli version=1.0.4
 ```
  |                                                  Method |                        Strategy |        Mean |      Error |     StdDev | Scaled | ScaledSD |  Gen 0 | Allocated |
  |-------------------------------------------------------- |-------------------------------- |------------:|-----------:|-----------:|-------:|---------:|-------:|----------:|
- |                  **MultiKeyMap_TryGetFullKeysByPartialKey** | **OptimizedForNonPositionalSearch** |  **5,176.8 ns** | **35.2651 ns** | **32.9870 ns** |  **39.87** |     **0.26** | **0.2594** |    **1112 B** |
- | MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey | OptimizedForNonPositionalSearch |  8,644.0 ns | 41.3801 ns | 38.7070 ns |  66.57 |     0.33 | 0.4883 |    2056 B |
- |  MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey | OptimizedForNonPositionalSearch | 10,103.6 ns | 21.8971 ns | 20.4825 ns |  77.81 |     0.23 | 0.6409 |    2720 B |
- |                                  Dictionary_TryGetValue | OptimizedForNonPositionalSearch |    129.8 ns |  0.3481 ns |  0.3086 ns |   1.00 |     0.00 | 0.0303 |     128 B |
- |                  **MultiKeyMap_TryGetFullKeysByPartialKey** |    **OptimizedForPositionalSearch** | **14,046.4 ns** | **45.8984 ns** | **40.6877 ns** | **107.24** |     **0.41** | **1.8921** |    **8024 B** |
- | MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey |    OptimizedForPositionalSearch | 12,917.5 ns | 28.6502 ns | 23.9242 ns |  98.62 |     0.31 | 1.2054 |    5104 B |
- |  MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey |    OptimizedForPositionalSearch |  3,074.5 ns |  6.0024 ns |  5.0123 ns |  23.47 |     0.07 | 0.2975 |    1256 B |
- |                                  Dictionary_TryGetValue |    OptimizedForPositionalSearch |    131.0 ns |  0.3932 ns |  0.3485 ns |   1.00 |     0.00 | 0.0303 |     128 B |
+ |                  **MultiKeyMap_TryGetFullKeysByPartialKey** | **OptimizedForNonPositionalSearch** |  **5,286.3 ns** | **33.1862 ns** | **31.0423 ns** |  **40.44** |     **0.24** | **0.2594** |    **1112 B** |
+ | MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey | OptimizedForNonPositionalSearch |  7,983.5 ns | 62.8220 ns | 58.7638 ns |  61.07 |     0.45 | 0.4425 |    1896 B |
+ |  MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey | OptimizedForNonPositionalSearch | 10,466.3 ns | 59.6924 ns | 55.8363 ns |  80.06 |     0.45 | 0.6409 |    2720 B |
+ |                                  Dictionary_TryGetValue | OptimizedForNonPositionalSearch |    130.7 ns |  0.3066 ns |  0.2868 ns |   1.00 |     0.00 | 0.0303 |     128 B |
+ |                  **MultiKeyMap_TryGetFullKeysByPartialKey** |    **OptimizedForPositionalSearch** | **13,759.0 ns** | **60.9413 ns** | **54.0229 ns** | **103.62** |     **1.69** | **1.8616** |    **7864 B** |
+ | MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey |    OptimizedForPositionalSearch |  9,041.2 ns | 31.3891 ns | 27.8256 ns |  68.09 |     1.10 | 1.2970 |    5480 B |
+ |  MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey |    OptimizedForPositionalSearch |  2,331.5 ns | 21.5581 ns | 20.1654 ns |  17.56 |     0.32 | 0.2975 |    1256 B |
+ |                                  Dictionary_TryGetValue |    OptimizedForPositionalSearch |    132.8 ns |  2.3719 ns |  2.2187 ns |   1.00 |     0.00 | 0.0303 |     128 B |

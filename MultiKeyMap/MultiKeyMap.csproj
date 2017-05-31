@@ -13,13 +13,13 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>improved benchmarks</PackageReleaseNotes>
+    <PackageReleaseNotes>fixed the position optimized implementation's hashing</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>4.0.20.0</AssemblyVersion>
-    <FileVersion>4.0.20.0</FileVersion>
-    <Version>4.0.20</Version>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+    <FileVersion>4.1.0.0</FileVersion>
+    <Version>4.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -12,7 +12,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
         K Key { get; }
     }
 
-    internal interface ISubKeyMask<T> : IEquatable<ISubKeyMask<T>>, IEquatable<T>
+    internal interface ISubKeyMask<T> : IEquatable<ISubKeyMask<T>>
     {
         T SubKey { get; }
         int Position { get; }
@@ -82,6 +82,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
     internal class SubKeyMask<T> : ISubKeyMask<T>
     {
         public const int NonPositional = -1;
+        public const int NonPositionalHashCode = int.MaxValue >> 16;
 
         public SubKeyMask(T subKey) : this(subKey, NonPositional)
         {
@@ -98,14 +99,16 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
         public int Position { get; }
 
-        bool IEquatable<T>.Equals(T other)
-        {
-            return (other == null) ? false : SubKey.Equals(other);
-        }
-
         public override int GetHashCode()
         {
-            return SubKey.GetHashCode();
+            int hash = 13;
+
+            unchecked
+            {
+                hash = (hash + ((Position == NonPositional) ? NonPositionalHashCode : Position.GetHashCode())) * 47 + SubKey.GetHashCode();
+            }
+
+            return hash;
         }
 
         public bool Equals(ISubKeyMask<T> other)
@@ -125,7 +128,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
                 return false;
             }
 
-            return SubKey.Equals(other.SubKey);
+            return Equals(SubKey, other.SubKey) && (Position == other.Position);
         }
 
         public override bool Equals(object obj)
@@ -186,7 +189,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
             public override int GetHashCode(ISubKeyMask<T> obj)
             {
-                return obj?.SubKey?.GetHashCode() ?? 0;
+                return obj?.GetHashCode() ?? 0;
             }
         }
 

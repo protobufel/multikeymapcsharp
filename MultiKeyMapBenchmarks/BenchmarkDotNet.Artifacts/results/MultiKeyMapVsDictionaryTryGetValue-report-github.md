@@ -11,7 +11,7 @@ dotnet cli version=1.0.4
 ```
  |                  Method |                        Strategy |     Mean |     Error |    StdDev | Scaled |  Gen 0 | Allocated |
  |------------------------ |-------------------------------- |---------:|----------:|----------:|-------:|-------:|----------:|
- | **MultiKeyMap_TryGetValue** | **OptimizedForNonPositionalSearch** | **34.01 us** | **0.2007 us** | **0.1676 us** |   **1.00** | **3.0518** |  **12.56 KB** |
- |  Dictionary_TryGetValue | OptimizedForNonPositionalSearch | 33.84 us | 0.0840 us | 0.0744 us |   1.00 | 3.0518 |  12.56 KB |
- | **MultiKeyMap_TryGetValue** |    **OptimizedForPositionalSearch** | **33.54 us** | **0.1664 us** | **0.1390 us** |   **1.00** | **3.0518** |  **12.56 KB** |
- |  Dictionary_TryGetValue |    OptimizedForPositionalSearch | 33.66 us | 0.0592 us | 0.0525 us |   1.00 | 3.0518 |  12.56 KB |
+ | **MultiKeyMap_TryGetValue** | **OptimizedForNonPositionalSearch** | **33.57 us** | **0.0561 us** | **0.0406 us** |   **1.00** | **3.0518** |  **12.56 KB** |
+ |  Dictionary_TryGetValue | OptimizedForNonPositionalSearch | 33.73 us | 0.3124 us | 0.2922 us |   1.00 | 3.0518 |  12.56 KB |
+ | **MultiKeyMap_TryGetValue** |    **OptimizedForPositionalSearch** | **34.29 us** | **0.1376 us** | **0.1287 us** |   **1.00** | **3.0518** |  **12.56 KB** |
+ |  Dictionary_TryGetValue |    OptimizedForPositionalSearch | 34.24 us | 0.2583 us | 0.2416 us |   1.00 | 3.0518 |  12.56 KB |

@@ -9,9 +9,9 @@ dotnet cli version=1.0.4
 
 
 ```
- |          Method |                        Strategy |       Mean |     Error |    StdDev | Scaled | ScaledSD |   Gen 0 |  Gen 1 | Allocated |
- |---------------- |-------------------------------- |-----------:|----------:|----------:|-------:|---------:|--------:|-------:|----------:|
- | **MultiKeyMap_Add** | **OptimizedForNonPositionalSearch** | **213.237 us** | **1.2228 us** | **1.0840 us** |  **44.77** |     **0.35** | **34.1797** | **0.2441** | **140.52 KB** |
- |  Dictionary_Add | OptimizedForNonPositionalSearch |   4.764 us | 0.0344 us | 0.0305 us |   1.00 |     0.00 |  2.4872 |      - |  10.21 KB |
- | **MultiKeyMap_Add** |    **OptimizedForPositionalSearch** | **310.649 us** | **0.4653 us** | **0.3364 us** |  **64.90** |     **0.22** | **50.7813** |      **-** | **208.48 KB** |
- |  Dictionary_Add |    OptimizedForPositionalSearch |   4.787 us | 0.0207 us | 0.0162 us |   1.00 |     0.00 |  2.5177 |      - |  10.32 KB |
+ |          Method |                        Strategy |       Mean |     Error |    StdDev | Scaled | ScaledSD |   Gen 0 |   Gen 1 | Allocated |
+ |---------------- |-------------------------------- |-----------:|----------:|----------:|-------:|---------:|--------:|--------:|----------:|
+ | **MultiKeyMap_Add** | **OptimizedForNonPositionalSearch** | **214.843 us** | **1.7234 us** | **1.6121 us** |  **44.18** |     **0.38** | **34.1797** |  **0.2441** | **140.52 KB** |
+ |  Dictionary_Add | OptimizedForNonPositionalSearch |   4.864 us | 0.0273 us | 0.0242 us |   1.00 |     0.00 |  2.4872 |       - |  10.21 KB |
+ | **MultiKeyMap_Add** |    **OptimizedForPositionalSearch** | **403.821 us** | **2.1189 us** | **1.8784 us** |  **82.24** |     **0.58** | **67.2852** | **33.6263** | **388.84 KB** |
+ |  Dictionary_Add |    OptimizedForPositionalSearch |   4.911 us | 0.0314 us | 0.0279 us |   1.00 |     0.00 |  2.5177 |       - |  10.32 KB |
