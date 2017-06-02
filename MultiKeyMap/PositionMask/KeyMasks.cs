@@ -22,7 +22,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
     {
         public KeyMask(K key)
         {
-            if (!(key is System.ValueType) && (key == null)) throw new ArgumentNullException("key");
+            if (!(key is ValueType) && (key == null)) throw new ArgumentNullException("key");
             Key = key;
         }
 
@@ -90,7 +90,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
         public SubKeyMask(T subKey, int position)
         {
-            if (!(subKey is System.ValueType) && (subKey == null)) throw new ArgumentNullException("key");
+            if (!(subKey is ValueType) && (subKey == null)) throw new ArgumentNullException("key");
             SubKey = subKey;
             Position = position;
         }
@@ -101,14 +101,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
         public override int GetHashCode()
         {
-            int hash = 13;
-
-            unchecked
-            {
-                hash = (hash + ((Position == NonPositional) ? NonPositionalHashCode : Position.GetHashCode())) * 47 + SubKey.GetHashCode();
-            }
-
-            return hash;
+            return KeyMaskExtensions.ShiftAndWrap(Position.GetHashCode(), 2) ^ SubKey.GetHashCode();
         }
 
         public bool Equals(ISubKeyMask<T> other)
@@ -123,12 +116,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
                 return true;
             }
 
-            if (GetType() != other.GetType())
-            {
-                return false;
-            }
-
-            return Equals(SubKey, other.SubKey) && (Position == other.Position);
+            return (Position == other.Position) && Equals(SubKey, other.SubKey);
         }
 
         public override bool Equals(object obj)
@@ -184,13 +172,31 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
             public override bool Equals(ISubKeyMask<T> x, ISubKeyMask<T> y)
             {
-                return SubKeyComparer.Equals(x.SubKey, y.SubKey);
+                if (ReferenceEquals(x, null))
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                return (x.Position == y.Position) && SubKeyComparer.Equals(x.SubKey, y.SubKey);
             }
 
             public override int GetHashCode(ISubKeyMask<T> obj)
             {
-                return obj?.GetHashCode() ?? 0;
+                return ShiftAndWrap(obj.Position.GetHashCode(), 2) ^ SubKeyComparer.GetHashCode(obj.SubKey);
             }
+        }
+
+        internal static int ShiftAndWrap(int value, int positions)
+        {
+            positions = positions & 0x1F;
+            uint number = BitConverter.ToUInt32(BitConverter.GetBytes(value), 0);
+            uint wrapped = number >> (32 - positions);
+            return BitConverter.ToInt32(BitConverter.GetBytes((number << positions) | wrapped), 0);
         }
 
         public static IEqualityComparer<IKeyMask<T, K>> ToKeyMaskComparer<T, K>(this IEqualityComparer<K> keyComparer) where K : IEnumerable<T>
