@@ -4,8 +4,13 @@ using GitHub.Protobufel.MultiKeyMap;
 using static GitHub.Protobufel.MultiKeyMap.MultiKeyMaps.MultiKeyCreationStrategy;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Loggers;
 using System.Collections.Generic;
 using static MultiKeyMapBenchmarks.BenchMarkHelpers;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Validators;
+using BenchmarkDotNet.Attributes.Jobs;
 
 namespace MultiKeyMapBenchmarks
 {
@@ -13,12 +18,14 @@ namespace MultiKeyMapBenchmarks
     {
         static void Main(string[] args)
         {
-            var summary1 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryCreation>();
-            var summary2 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryAddition>();
-            var summary3 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryRemoval>();
-            var summary4 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetValue>();
+            //var summary1 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryCreation>();
+            //var summary2 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryAddition>();
+            //var summary3 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryRemoval>();
+            //var summary4 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetValue>();
             // var summary5 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000000rows100searches>();
-            var summary6 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search>();
+            //var summary6 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search>();
+            var summary7 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search>();
+            //var summary0 = BenchmarkRunner.Run<BenchmarkPlayground1>();
         }
     }
 
@@ -405,7 +412,7 @@ namespace MultiKeyMapBenchmarks
     }
 
     [MemoryDiagnoser]
-    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search
+    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1searchOld
     {
         private IMultiKeyMap<string, IEnumerable<string>, string> nonPosMap;
         private IMultiKeyMap<string, IEnumerable<string>, string> posMap;
@@ -482,6 +489,219 @@ namespace MultiKeyMapBenchmarks
             }
 
             return result;
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search
+    {
+        private IMultiKeyMap<string, IEnumerable<string>, string> map;
+        private IDictionary<IEnumerable<string>, string> dict;
+
+        private IList<IEnumerable<string>> keys;
+        private IList<IEnumerable<string>> partKeys;
+        private IList<int> positions;
+        private IList<int> positivePositions;
+
+        private const int SearchCount = 1;
+        private const int RecordCount = 1_000;
+        private const int KeySize = 10;
+
+
+        [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
+        public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
+
+        [Params(true, false)]
+        public bool SubKeyEqualityByRef { get; set; }
+
+        [Params(true, false)]
+        public bool KeyEqualityByRef { get; set; }
+
+        public IEqualityComparer<string> SubKeyEqualityComparer => EqualityComparerExtensions.ReferenceEqualityComparerOf<string>();
+        public IEqualityComparer<IEnumerable<string>> KeyEqualityComparer => KeyEqualityByRef
+            ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<string>>()
+            : EqualityComparer<string>.Default.EnumerableEqualityComparerOf<string, IEnumerable<string>>();
+
+        [Setup]
+        public void Setup()
+        {
+            int count = SearchCount;
+            Init();
+            keys = dict.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
+            (partKeys, positivePositions, positions) = PopulatePartialKeys(dict.Keys, count);
+        }
+
+        public void Init()
+        {
+            map = MultiKeyMaps.CreateMultiKeyDictionary<string, IEnumerable<string>, string>(SubKeyEqualityComparer, KeyEqualityComparer, Strategy);
+            dict = new Dictionary<IEnumerable<string>, string>(KeyEqualityComparer);
+
+            PopulateDictionary(map, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
+            PopulateDictionary(dict, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_TryGetFullKeysByPartialKey()
+        {
+            map.TryGetFullKeysByPartialKey(partKeys.First(), out var value);
+            return value;
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
+        {
+            map.TryGetFullKeysByPartialKey(partKeys.First(), positions, out var value);
+            return value;
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<string>> MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
+        {
+            map.TryGetFullKeysByPartialKey(partKeys.First(), positivePositions, out var value);
+            return value;
+        }
+
+        [Benchmark(Baseline = true)]
+        public IEnumerable<string> Dictionary_TryGetValue()
+        {
+            var result = new List<string>(partKeys.Count);
+
+            foreach (var key in keys.Take(KeySize))
+            {
+                if (dict.TryGetValue(key, out var value))
+                {
+                    result.Add(value);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    [ShortRunJob]
+    [MemoryDiagnoser]
+    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search
+    {
+        private IMultiKeyMap<Employee<int>, IEnumerable<Employee<int>>, string> map;
+        private IDictionary<IEnumerable<Employee<int>>, string> dict;
+
+        private IList<IEnumerable<Employee<int>>> keys;
+        private IList<IEnumerable<Employee<int>>> partKeys;
+        private IList<int> positions;
+        private IList<int> positivePositions;
+
+        private const int SearchCount = 1;
+        private const int RecordCount = 1_000;
+        private const int KeySize = 10;
+
+        public ILogger Logger { get; set; }
+
+        public MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search()
+        {
+            Logger = new AccumulationLogger();
+        }
+
+        [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
+        public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
+
+        [Params(true, false)]
+        public bool SubKeyEqualityByRef { get; set; }
+
+        [Params(true, false)]
+        public bool KeyEqualityByRef { get; set; }
+
+        public IEqualityComparer<Employee<int>> SubKeyEqualityComparer => SubKeyEqualityByRef 
+            ? EqualityComparerExtensions.ReferenceEqualityComparerOf<Employee<int>>() 
+            : EqualityComparer<Employee<int>>.Default;
+        public IEqualityComparer<IEnumerable<Employee<int>>> KeyEqualityComparer => KeyEqualityByRef
+            ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<Employee<int>>>()
+            : EqualityComparer<Employee<int>>.Default.EnumerableEqualityComparerOf<Employee<int>, IEnumerable<Employee<int>>>();
+
+        [Setup]
+        public void Setup()
+        {
+            int count = SearchCount;
+            Init();
+            keys = dict.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
+            (partKeys, positivePositions, positions) = PopulatePartialKeys(dict.Keys, count);
+            //Logger.WriteLine($"map count = {map.Count}");
+            //Logger.WriteLine($"dict count = {dict.Count}");
+            //Logger.WriteLine($"partKeys count = {partKeys.Count}");
+
+            //if (partKeys.Count == 0)
+            //{
+            //    Logger.WriteError("partKeys.Count == 0!");
+            //}
+            //else
+            //{
+            //    Logger.WriteLine($"partKey = {String.Join(",", partKeys.First())}");
+            //}
+        }
+
+        public void Init()
+        {
+            map = MultiKeyMaps.CreateMultiKeyDictionary<Employee<int>, IEnumerable<Employee<int>>, string>(SubKeyEqualityComparer, KeyEqualityComparer, Strategy);
+            dict = new Dictionary<IEnumerable<Employee<int>>, string>(KeyEqualityComparer);
+
+            PopulateDictionary(map, RecordCount, KeySize, x => new Employee<int>(String.Join("", Enumerable.Range(x, 10)), x), x => x.ToString());
+            PopulateDictionary(dict, RecordCount, KeySize, x => new Employee<int>(String.Join("", Enumerable.Range(x, 10)), x), x => x.ToString());
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<Employee<int>>> MultiKeyMap_TryGetFullKeysByPartialKey()
+        {
+            //Logger.WriteLine($"map count = {map.Count}");
+
+            if (map.TryGetFullKeysByPartialKey(partKeys.First(), out var value))
+            {
+                //Logger.WriteLine($"partKey = {String.Join(",", partKeys.First())}");
+                //Logger.WriteLine($"value = {String.Join(",", value)}");
+            }
+            else
+            {
+                //Logger.WriteLine($"result of TryGetFullKeysByPartialKey is false!");
+            }
+
+            return value;
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<Employee<int>>> MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
+        {
+            map.TryGetFullKeysByPartialKey(partKeys.First(), positions, out var value);
+            return value;
+        }
+
+        [Benchmark]
+        public IEnumerable<IEnumerable<Employee<int>>> MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
+        {
+            map.TryGetFullKeysByPartialKey(partKeys.First(), positivePositions, out var value);
+            return value;
+        }
+
+        [Benchmark(Baseline = true)]
+        public string Dictionary_TryGetValue()
+        {
+            dict.TryGetValue(keys.First(), out var value);
+            return value;
+        }
+    }
+
+    public class Employee<T> : Tuple<string, T>
+    {
+
+        public Employee(string name, T department) : base(name, department)
+        {
+            Name = name;
+            Department = department;
+        }
+
+        public string Name { get; private set; }
+        public T Department { get; private set; }
+
+        public override string ToString()
+        {
+            return $"Employee(name={Name}, department={Department})";
         }
     }
 }

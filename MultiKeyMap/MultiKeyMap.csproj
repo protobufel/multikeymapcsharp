@@ -13,13 +13,14 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>fixed the position optimized implementation's hashing</PackageReleaseNotes>
+    <PackageReleaseNotes>1. Exposed internal equality comparer extensions and the reference equality comparer via EqualityComparerExtensions static class.
+2. Tweaked some benchmarks</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0.0</FileVersion>
-    <Version>4.1.0</Version>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+    <Version>4.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

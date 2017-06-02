@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace GitHub.Protobufel.MultiKeyMap
 {
@@ -154,6 +155,112 @@ namespace GitHub.Protobufel.MultiKeyMap
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
             return me.TryGetFullKeysByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out fullKeys);
+        }
+    }
+
+    /// <summary>
+    /// Provides IEqualityComparer extensions
+    /// </summary>
+    public static class EqualityComparerExtensions
+    {
+        /// <summary>
+        /// Creates the sequence IEqualityComparer based on the supplied element comparer.
+        /// </summary>
+        /// <typeparam name="T">The type of the element.</typeparam>
+        /// <typeparam name="K">The type of the sequence to generate the equality comparer for.</typeparam>
+        /// <param name="elementComparer">The equality comparer of the target sequence's elements.</param>
+        /// <returns>The equality comparer of the desired sequence of elements</returns>
+        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : IEnumerable<T>
+        {
+            return new EnumerableEqualityComparer<T, K>(elementComparer);
+        }
+
+        /// <summary>
+        /// Creates the sequence IEqualityComparer based on the default element comparer.
+        /// </summary>
+        /// <typeparam name="T">The type of the element.</typeparam>
+        /// <typeparam name="K">The type of the sequence to generate the equality comparer for.</typeparam>
+        /// <returns>The equality comparer of the desired sequence of elements</returns>
+        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>() where K : IEnumerable<T>
+        {
+            return new EnumerableEqualityComparer<T, K>();
+        }
+
+        /// <summary>
+        /// Returns the singleton reference IEqualityComparer of the type.
+        /// </summary>
+        /// <remarks>Only works for reference types. If the type is <see cref="string"/> then 
+        /// uses <see cref="System.StringComparer.Ordinal"/>.</remarks>
+        /// <typeparam name="T">The type of the element.</typeparam>
+        /// <returns>The reference equality comparer of the desired type</returns>
+        public static IEqualityComparer<T> ReferenceEqualityComparerOf<T>() where T : class
+        {
+            return ReferenceEqualityComparer<T>.Default;
+        }
+    }
+
+    [Serializable]
+    internal class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : IEnumerable<T>
+    {
+        private IEqualityComparer<T> elementComparer;
+
+        public EnumerableEqualityComparer(IEqualityComparer<T> elementComparer)
+        {
+            this.elementComparer = elementComparer;
+        }
+
+        public EnumerableEqualityComparer() : this(EqualityComparer<T>.Default)
+        {
+        }
+
+        public override bool Equals(K col1, K col2)
+        {
+            return Enumerable.SequenceEqual(col1, col2, elementComparer);
+        }
+
+        public override int GetHashCode(K col)
+        {
+            //return StructuralComparisons.StructuralEqualityComparer.GetHashCode(col);
+            if (col == null)
+            {
+                return 0;
+            }
+
+            int hash = 5;
+
+            unchecked
+            {
+                foreach (var item in col)
+                {
+                    hash = hash * 37 + elementComparer.GetHashCode(item);
+                }
+            }
+
+            return hash;
+        }
+    }
+
+    internal sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+    {
+        internal readonly static ReferenceEqualityComparer<T> Default;
+
+        static ReferenceEqualityComparer()
+        {
+            Default = new ReferenceEqualityComparer<T>();
+        }
+
+        private ReferenceEqualityComparer()
+        {
+        }
+
+        public bool Equals(T x, T y)
+        {
+            return ReferenceEquals(x, y) || (x is string) ? StringComparer.Ordinal.Equals(x as string, y as string) : false;
+        }
+
+        public int GetHashCode(T obj)
+        {
+            return RuntimeHelpers.GetHashCode(obj);
         }
     }
 }
