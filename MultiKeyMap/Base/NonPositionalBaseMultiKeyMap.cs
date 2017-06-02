@@ -139,7 +139,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 result = new HashSet<K>(subResults[minPos], FullKeyComparer);
 
             }
-            else if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, minPos), subKeyList[minPos], subResults[minPos], FullKeyComparer, out result))
+            else if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, minPos), subKeyList[minPos], subResults[minPos], out result))
             {
                 fullKeys = default(IEnumerable<K>);
                 return false;
@@ -155,7 +155,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             {
                 if (i != minPos)
                 {
-                    if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, i), subKeyList[i], subResults[i], FullKeyComparer, out ISet<K> filteredSubResult))
+                    if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, i), subKeyList[i], subResults[i], out ISet<K> filteredSubResult))
                     {
                         fullKeys = default(IEnumerable<K>);
                         return false;
@@ -175,7 +175,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             return true;
         }
 
-        protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, IEqualityComparer<K> comparer, out ISet<K> target)
+        protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, out ISet<K> target)
         {
             if (source.Count == 0)
             {
@@ -189,11 +189,11 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 return true;
             }
 
-            target = new HashSet<K>(comparer);
+            target = new HashSet<K>(FullKeyComparer);
 
             foreach (K fullKey in source)
             {
-                if (subkey.Equals(fullKey.ElementAtOrDefault(position)))
+                if (SubKeyComparer.Equals(subkey, fullKey.ElementAtOrDefault(position)))
                 {
                     target.Add(fullKey);
                 }

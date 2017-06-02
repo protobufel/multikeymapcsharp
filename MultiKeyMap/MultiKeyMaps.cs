@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GitHub.Protobufel.MultiKeyMap.Base;
 using GitHub.Protobufel.MultiKeyMap.Dictionaries;
 
 namespace GitHub.Protobufel.MultiKeyMap

@@ -132,7 +132,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 }
             }
 
-            HashSet<K> resultSet = ToSet<K>(minSubResult);
+            HashSet<K> resultSet = ToSet(minSubResult, FullKeyComparer);
 
             if ((sets.Count + colSets.Count) == 1)
             {
