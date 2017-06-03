@@ -11,8 +11,8 @@ namespace GitHub.Protobufel.MultiKeyMap.CollectionWrappers
             Func<T2, T1> subKeySelector1, Func<T1, T2> subKeySelector2,
             Func<K2, K1> keySelector1, Func<K1, K2> keySelector2,
             Func<V2, V1> valueSelector1, Func<V1, V2> valueSelector2)
-        where K1 : IEnumerable<T1>
-        where K2 : IEnumerable<T2>
+        where K1 : class, IEnumerable<T1>
+        where K2 : class, IEnumerable<T2>
         {
             return new VirtualMultiKeyMap<T1, T2, K1, V1, K2, V2>(source, subKeySelector1,
                 subKeySelector2, keySelector1, keySelector2, valueSelector1, valueSelector2);
@@ -22,8 +22,8 @@ namespace GitHub.Protobufel.MultiKeyMap.CollectionWrappers
             this IMultiKeyMap<T2, K2, V> source,
             Func<T2, T1> subKeySelector1, Func<T1, T2> subKeySelector2,
             Func<K2, K1> keySelector1, Func<K1, K2> keySelector2)
-        where K1 : IEnumerable<T1>
-        where K2 : IEnumerable<T2>
+        where K1 : class, IEnumerable<T1>
+        where K2 : class, IEnumerable<T2>
         {
             return new VirtualMultiKeyMap<T1, T2, K1, K2, V>(source, subKeySelector1, subKeySelector2,
                 keySelector1, keySelector2);
@@ -32,8 +32,8 @@ namespace GitHub.Protobufel.MultiKeyMap.CollectionWrappers
 
     [Serializable]
     internal class VirtualMultiKeyMap<T1, T2, K1, K2, V> : VirtualMultiKeyMap<T1, T2, K1, V, K2, V>
-        where K1 : IEnumerable<T1>
-        where K2 : IEnumerable<T2>
+        where K1 : class, IEnumerable<T1>
+        where K2 : class, IEnumerable<T2>
     {
         static protected readonly Func<V, V> ValueIdentity = x => x;
 
@@ -48,8 +48,8 @@ namespace GitHub.Protobufel.MultiKeyMap.CollectionWrappers
 
     [Serializable]
     internal class VirtualMultiKeyMap<T1, T2, K1, V1, K2, V2> : VirtualDictionary<K1, V1, K2, V2>, IMultiKeyMap<T1, K1, V1>
-        where K1 : IEnumerable<T1>
-        where K2 : IEnumerable<T2>
+        where K1 : class, IEnumerable<T1>
+        where K2 : class, IEnumerable<T2>
     {
         [NonSerialized]
         protected Func<T2, T1> subKeySelector1;

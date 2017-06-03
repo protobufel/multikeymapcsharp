@@ -8,7 +8,7 @@ using GitHub.Protobufel.MultiKeyMap.PositionMask;
 namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
-    internal abstract class PositionalBaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class PositionalBaseMaskMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         [NonSerialized]
         protected ILiteSetMultimap<ISubKeyMask<T>, K> partMap;
@@ -41,10 +41,12 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
 
         protected virtual ILiteSetMultimap<ISubKeyMask<TSubKey>, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
             IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
-            where TKey : IEnumerable<TSubKey>
+            where TKey : class, IEnumerable<TSubKey>
         {
+            //return CreateSupportDictionary<ISubKeyMask<TSubKey>, ISet<TKey>>(subKeyComparer.ToSubKeyMaskComparer())
+            //    .ToSetMultimap(fullKeyComparer);
             return CreateSupportDictionary<ISubKeyMask<TSubKey>, ISet<TKey>>(subKeyComparer.ToSubKeyMaskComparer())
-                .ToSetMultimap(fullKeyComparer);
+                .ToSetMultimap(EqualityComparerExtensions.ReferenceEqualityComparerOf<TKey>());
         }
 
         protected virtual IEqualityComparer<ISubKeyMask<T>> SubKeyMaskComparer => subKeyComparer.ToSubKeyMaskComparer();
@@ -132,7 +134,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 }
             }
 
-            HashSet<K> resultSet = ToSet(minSubResult, FullKeyComparer);
+            HashSet<K> resultSet = ToSet(minSubResult, EqualityComparerExtensions.ReferenceEqualityComparerOf<K>());
 
             if ((sets.Count + colSets.Count) == 1)
             {

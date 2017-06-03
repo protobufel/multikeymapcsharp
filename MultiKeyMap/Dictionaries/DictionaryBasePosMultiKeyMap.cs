@@ -6,7 +6,7 @@ using GitHub.Protobufel.MultiKeyMap.PositionMap;
 namespace GitHub.Protobufel.MultiKeyMap.Dictionaries
 {
     [Serializable]
-    internal class DictionaryBasePosMultiKeyMap<T, K, V> : BasePosMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal class DictionaryBasePosMultiKeyMap<T, K, V> : BasePosMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         public DictionaryBasePosMultiKeyMap(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer) 
             : base(subKeyComparer, fullKeyComparer, 

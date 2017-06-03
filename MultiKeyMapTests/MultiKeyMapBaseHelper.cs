@@ -6,7 +6,7 @@ using GitHub.Protobufel.MultiKeyMap;
 
 namespace MultiKeyMapTests
 {
-    public class MultiKeyMapBaseHelper<T, K, V> where K : IEnumerable<T>
+    public class MultiKeyMapBaseHelper<T, K, V> where K : class, IEnumerable<T>
     {
 
         private IMultiKeyMap<T, K, V> multiDict;

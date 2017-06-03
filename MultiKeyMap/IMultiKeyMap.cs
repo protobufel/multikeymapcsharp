@@ -9,7 +9,7 @@ namespace GitHub.Protobufel.MultiKeyMap
     /// <typeparam name="T">The type of sub-keys to query by and compose the full keys of</typeparam>
     /// <typeparam name="K">The type of the composite keys comprising some enumerable of sub-keys of type T</typeparam>
     /// <typeparam name="V">The type of values in the dictionary</typeparam>
-    public interface IMultiKeyMap<T, K, V> : IDictionary<K, V> where K : IEnumerable<T>
+    public interface IMultiKeyMap<T, K, V> : IDictionary<K, V> where K : class, IEnumerable<T>
     {
         /// <summary>
         /// Gets all values  for which their full keys contain the partial key set in any order.

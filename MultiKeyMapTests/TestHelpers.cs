@@ -8,12 +8,12 @@ namespace MultiKeyMapTests
     public static class TestHelpers
     {
         #region creation helpers
-        public static IMultiKeyMap<T, K, V> CreateMultiKeyMap<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> CreateMultiKeyMap<T, K, V>(K[] keys, V[] values) where K : class, IEnumerable<T>
         {
             return CreateMultiKeyMap<T, K, V>(keys, values, () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>());
         }
 
-        public static IMultiKeyMap<T, K, V> CreateMultiKeyMap<T, K, V>(K[] keys, V[] values, Func<IMultiKeyMap<T, K, V>> supplier) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> CreateMultiKeyMap<T, K, V>(K[] keys, V[] values, Func<IMultiKeyMap<T, K, V>> supplier) where K : class, IEnumerable<T>
         {
             var map = supplier.Invoke();
 
@@ -25,7 +25,7 @@ namespace MultiKeyMapTests
             return map;
         }
 
-        public static IDictionary<K, V> CreateDictionary<T, K, V>(K[] keys, V[] values) where K : IEnumerable<T>
+        public static IDictionary<K, V> CreateDictionary<T, K, V>(K[] keys, V[] values) where K : class, IEnumerable<T>
         {
             var map = keys.Zip(values, (k, v) => new KeyValuePair<K, V>(k, v)).ToDictionary(entry => entry.Key, entry => entry.Value);
             return map;
@@ -48,7 +48,7 @@ namespace MultiKeyMapTests
                 int searchCount,
                 int recordCount,
                 int keySize)
-            where K : IEnumerable<T>
+            where K : class, IEnumerable<T>
         {
             var dict = new Dictionary<K, V>(keyComparer);
             PopulateDictionary(dict as IDictionary<IEnumerable<T>, V>, recordCount, keySize, subKeyConverter, valueConverter);

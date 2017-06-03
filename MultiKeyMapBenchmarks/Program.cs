@@ -7,6 +7,7 @@ using BenchmarkDotNet.Running;
 using System.Collections.Generic;
 using static MultiKeyMapBenchmarks.BenchMarkHelpers;
 using BenchmarkDotNet.Attributes.Jobs;
+using BenchmarkDotNet.Loggers;
 
 namespace MultiKeyMapBenchmarks
 {
@@ -14,13 +15,12 @@ namespace MultiKeyMapBenchmarks
     {
         static void Main(string[] args)
         {
-            //var summary1 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryCreation>();
-            //var summary2 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryAddition>();
-            //var summary3 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryRemoval>();
-            //var summary4 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetValue>();
-            // var summary5 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000000rows100searches>();
-            //var summary6 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search>();
-            var summary7 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search>();
+            var summary1 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryCreation>();
+            var summary2 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryAddition>();
+            var summary3 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryRemoval>();
+            var summary4 = BenchmarkRunner.Run<MultiKeyMapVsDictionaryTryGetValue>();
+            var summary6 = BenchmarkRunner.Run<MultiKeyMapTryGetsByPartialKeyStrings>();
+            var summary7 = BenchmarkRunner.Run<MultiKeyMapTryGetsByPartialKeyEmployees>();
         }
     }
 
@@ -305,122 +305,30 @@ namespace MultiKeyMapBenchmarks
     }
 
     [MemoryDiagnoser]
-    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000000rows100searches
+    public class MultiKeyMapTryGetsByPartialKeyStrings
     {
         private IMultiKeyMap<string, IEnumerable<string>, string> map;
-        private IDictionary<IEnumerable<string>, string> dict;
-
         private IList<IEnumerable<string>> keys;
         private IList<IEnumerable<string>> partKeys;
         private IList<int> positions;
         private IList<int> positivePositions;
 
-        private const int SearchCount = 100;
-        private const int RecordCount = 1_000_000;
-        private const int KeySize = 10;
 
+        public ILogger Logger { get; set; }
 
-        [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
-        public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
-
-        [Setup]
-        public void Setup()
+        public MultiKeyMapTryGetsByPartialKeyStrings()
         {
-            int count = SearchCount;
-            Init();
-            keys = dict.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
-            (partKeys, positivePositions, positions) = PopulatePartialKeys(map.Keys, count);
+            Logger = new ConsoleLogger();
         }
 
-        public void Init()
-        {
-            map = MultiKeyMaps.CreateMultiKeyDictionary<string, IEnumerable<string>, string>(Strategy);
-            dict = new Dictionary<IEnumerable<string>, string>();
+        [Params(1_000_000)]
+        public int RecordCount { get; set; }
 
-            PopulateDictionary(map, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
-            PopulateDictionary(dict, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
-        }
+        [Params(5)]
+        public int SearchCount { get; set; }
 
-        [Benchmark]
-        public IEnumerable<IEnumerable<IEnumerable<string>>> MultiKeyMap_TryGetFullKeysByPartialKey()
-        {
-            var result = new List<IEnumerable<IEnumerable<string>>>(partKeys.Count);
-
-            foreach (var partKey in partKeys)
-            {
-                if (map.TryGetFullKeysByPartialKey(partKey, out var value))
-                {
-                    result.Add(value);
-                }
-            }
-
-            return result;
-        }
-
-        [Benchmark]
-        public IEnumerable<IEnumerable<IEnumerable<string>>> MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
-        {
-            var result = new List<IEnumerable<IEnumerable<string>>>(partKeys.Count);
-
-            foreach (var partKey in partKeys)
-            {
-                if (map.TryGetFullKeysByPartialKey(partKey, positions, out var value))
-                {
-                    result.Add(value);
-                }
-            }
-
-            return result;
-        }
-
-        [Benchmark]
-        public IEnumerable<IEnumerable<IEnumerable<string>>> MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
-        {
-            var result = new List<IEnumerable<IEnumerable<string>>>(partKeys.Count);
-
-            foreach (var partKey in partKeys)
-            {
-                if (map.TryGetFullKeysByPartialKey(partKey, positivePositions, out var value))
-                {
-                    result.Add(value);
-                }
-            }
-
-            return result;
-        }
-
-        [Benchmark(Baseline = true)]
-        public IEnumerable<string> Dictionary_TryGetValue()
-        {
-            var result = new List<string>(partKeys.Count);
-
-            foreach (var key in keys)
-            {
-                if (dict.TryGetValue(key, out var value))
-                {
-                    result.Add(value);
-                }
-            }
-
-            return result;
-        }
-    }
-
-    [MemoryDiagnoser]
-    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyStrings1000rows1search
-    {
-        private IMultiKeyMap<string, IEnumerable<string>, string> map;
-        private IDictionary<IEnumerable<string>, string> dict;
-
-        private IList<IEnumerable<string>> keys;
-        private IList<IEnumerable<string>> partKeys;
-        private IList<int> positions;
-        private IList<int> positivePositions;
-
-        private const int SearchCount = 1;
-        private const int RecordCount = 1_000;
-        private const int KeySize = 10;
-
+        [Params(10)]
+        public int KeySize { get; set; }
 
         [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
         public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
@@ -430,6 +338,7 @@ namespace MultiKeyMapBenchmarks
 
         [Params(true, false)]
         public bool KeyEqualityByRef { get; set; }
+
 
         public IEqualityComparer<string> SubKeyEqualityComparer => EqualityComparerExtensions.ReferenceEqualityComparerOf<string>();
         public IEqualityComparer<IEnumerable<string>> KeyEqualityComparer => KeyEqualityByRef
@@ -441,79 +350,91 @@ namespace MultiKeyMapBenchmarks
         {
             int count = SearchCount;
             Init();
-            keys = dict.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
-            (partKeys, positivePositions, positions) = PopulatePartialKeys(dict.Keys, count);
+            keys = map.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
+            (partKeys, positivePositions, positions) = PopulatePartialKeys(map.Keys, count);
         }
 
         public void Init()
         {
             map = MultiKeyMaps.CreateMultiKeyDictionary<string, IEnumerable<string>, string>(SubKeyEqualityComparer, KeyEqualityComparer, Strategy);
-            dict = new Dictionary<IEnumerable<string>, string>(KeyEqualityComparer);
-
             PopulateDictionary(map, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
-            PopulateDictionary(dict, RecordCount, KeySize, x => String.Join("", Enumerable.Range(x, 10)), x => x.ToString());
+        }
+
+
+        [Benchmark]
+        public bool TryGetFullKeysByPartialKey()
+        {
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, out var value)) return false;
+
+            }
+
+            return true;
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<string>> MultiKeyMap_TryGetFullKeysByPartialKey()
+        public bool Mixed_Positional_TryGetFullKeysByPartialKey()
         {
-            map.TryGetFullKeysByPartialKey(partKeys.First(), out var value);
-            return value;
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, positions, out var value)) return false;
+
+            }
+
+            return true;
         }
 
         [Benchmark]
-        public IEnumerable<IEnumerable<string>> MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
+        public bool Only_Positional_TryGetFullKeysByPartialKey()
         {
-            map.TryGetFullKeysByPartialKey(partKeys.First(), positions, out var value);
-            return value;
-        }
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, positivePositions, out var value)) return false;
 
-        [Benchmark]
-        public IEnumerable<IEnumerable<string>> MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
-        {
-            map.TryGetFullKeysByPartialKey(partKeys.First(), positivePositions, out var value);
-            return value;
+            }
+
+            return true;
         }
 
         [Benchmark(Baseline = true)]
-        public IEnumerable<string> Dictionary_TryGetValue()
+        public bool TryGetValue()
         {
-            var result = new List<string>(partKeys.Count);
-
-            foreach (var key in keys.Take(KeySize))
+            foreach (var key in keys)
             {
-                if (dict.TryGetValue(key, out var value))
-                {
-                    result.Add(value);
-                }
+                if (!map.TryGetValue(key, out var value)) return false;
+
             }
 
-            return result;
+            return true;
         }
     }
 
     [ShortRunJob]
     [MemoryDiagnoser]
-    public class MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search
+    public class MultiKeyMapTryGetsByPartialKeyEmployees
     {
         private IMultiKeyMap<Employee<int>, IEnumerable<Employee<int>>, string> map;
-        private IDictionary<IEnumerable<Employee<int>>, string> dict;
-
         private IList<IEnumerable<Employee<int>>> keys;
         private IList<IEnumerable<Employee<int>>> partKeys;
         private IList<int> positions;
         private IList<int> positivePositions;
 
-        private const int SearchCount = 1;
-        private const int RecordCount = 1_000;
-        private const int KeySize = 10;
+        public ILogger Logger { get; set; }
 
-        //public ILogger Logger { get; set; }
+        public MultiKeyMapTryGetsByPartialKeyEmployees()
+        {
+            Logger = new ConsoleLogger();
+        }
 
-        //public MultiKeyMapVsDictionaryTryGetsByPartialKeyEmployees1000rows1search()
-        //{
-        //    Logger = new ConsoleLogger();
-        //}
+        [Params(1_000_000)]
+        public int RecordCount { get; set; }
+
+        [Params(5)]
+        public int SearchCount { get; set; }
+
+        [Params(10)]
+        public int KeySize { get; set; }
 
         [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
         public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
@@ -524,8 +445,8 @@ namespace MultiKeyMapBenchmarks
         [Params(true, false)]
         public bool KeyEqualityByRef { get; set; }
 
-        public IEqualityComparer<Employee<int>> SubKeyEqualityComparer => SubKeyEqualityByRef 
-            ? EqualityComparerExtensions.ReferenceEqualityComparerOf<Employee<int>>() 
+        public IEqualityComparer<Employee<int>> SubKeyEqualityComparer => SubKeyEqualityByRef
+            ? EqualityComparerExtensions.ReferenceEqualityComparerOf<Employee<int>>()
             : EqualityComparer<Employee<int>>.Default;
         public IEqualityComparer<IEnumerable<Employee<int>>> KeyEqualityComparer => KeyEqualityByRef
             ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<Employee<int>>>()
@@ -536,41 +457,62 @@ namespace MultiKeyMapBenchmarks
         {
             int count = SearchCount;
             Init();
-            keys = dict.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
-            (partKeys, positivePositions, positions) = PopulatePartialKeys(dict.Keys, count);
+            keys = map.Keys.Where((x, index) => index % 3 == 0).Take(count).ToList();
+            (partKeys, positivePositions, positions) = PopulatePartialKeys(map.Keys, count);
         }
 
         public void Init()
         {
             map = MultiKeyMaps.CreateMultiKeyDictionary<Employee<int>, IEnumerable<Employee<int>>, string>(SubKeyEqualityComparer, KeyEqualityComparer, Strategy);
-            dict = new Dictionary<IEnumerable<Employee<int>>, string>(KeyEqualityComparer);
-
             PopulateDictionary(map, RecordCount, KeySize, x => new Employee<int>(String.Join("", Enumerable.Range(x, 10)), x), x => x.ToString());
-            PopulateDictionary(dict, RecordCount, KeySize, x => new Employee<int>(String.Join("", Enumerable.Range(x, 10)), x), x => x.ToString());
         }
 
         [Benchmark]
-        public bool MultiKeyMap_TryGetFullKeysByPartialKey()
+        public bool TryGetFullKeysByPartialKey()
         {
-            return map.TryGetFullKeysByPartialKey(partKeys[0], out var value);
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, out var value)) return false;
+
+            }
+
+            return true;
         }
 
         [Benchmark]
-        public bool MultiKeyMap_Mixed_Positional_TryGetFullKeysByPartialKey()
+        public bool Mixed_Positional_TryGetFullKeysByPartialKey()
         {
-            return map.TryGetFullKeysByPartialKey(partKeys[0], positions, out var value);
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, positions, out var value)) return false;
+
+            }
+
+            return true;
         }
 
         [Benchmark]
-        public bool MultiKeyMap_Only_Positional_TryGetFullKeysByPartialKey()
+        public bool Only_Positional_TryGetFullKeysByPartialKey()
         {
-            return map.TryGetFullKeysByPartialKey(partKeys[0], positivePositions, out var value);
+            foreach (var partKey in partKeys)
+            {
+                if (!map.TryGetFullKeysByPartialKey(partKey, positivePositions, out var value)) return false;
+
+            }
+
+            return true;
         }
 
         [Benchmark(Baseline = true)]
-        public bool Dictionary_TryGetValue()
+        public bool TryGetValue()
         {
-            return dict.TryGetValue(keys[0], out var value);
+            foreach (var key in keys)
+            {
+                if (!map.TryGetValue(key, out var value)) return false;
+
+            }
+
+            return true;
         }
     }
 

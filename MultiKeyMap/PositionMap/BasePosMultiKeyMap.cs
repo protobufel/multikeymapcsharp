@@ -8,7 +8,7 @@ using GitHub.Protobufel.MultiKeyMap.PositionMask;
 namespace GitHub.Protobufel.MultiKeyMap.PositionMap
 {
     [Serializable]
-    internal abstract class BasePosMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class BasePosMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         private const float CostRatioOfNewJoinOp = 2.0F;
 

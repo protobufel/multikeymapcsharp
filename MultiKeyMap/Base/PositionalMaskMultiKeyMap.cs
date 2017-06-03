@@ -6,7 +6,7 @@ using GitHub.Protobufel.MultiKeyMap.PositionMask;
 namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
-    internal abstract class PositionalMaskMultiKeyMap<T, K, V> : PositionalBaseMaskMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class PositionalMaskMultiKeyMap<T, K, V> : PositionalBaseMaskMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         [NonSerialized]
         protected IDictionary<T, IBitList> subKeyPositions;

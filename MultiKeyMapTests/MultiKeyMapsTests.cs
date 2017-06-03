@@ -28,7 +28,7 @@ namespace MultiKeyMapTests
 
         private void CreateMultiKeyDictionaryWithComparersEmptyHelper<T, K, V>(
             IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
-            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : IEnumerable<T>
+            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : class, IEnumerable<T>
         {
             var multiDict = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(subKeyComparer, fullKeyComparer, strategy);
 
@@ -59,7 +59,7 @@ namespace MultiKeyMapTests
         private IMultiKeyMap<T, K, V> CreateMultiKeyDictionaryWithComparersHelper<T, K, V>(
             IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
             T t, K k, V v,
-            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : IEnumerable<T>
+            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : class, IEnumerable<T>
         {
             var multiDict = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(subKeyComparer, fullKeyComparer, strategy);
             Assert.IsNotNull(multiDict);
@@ -82,7 +82,7 @@ namespace MultiKeyMapTests
         }
 
         private IMultiKeyMap<T, K, V> CreatesEmptyInstanceHelper<T, K, V>(T t, K k, V v,
-            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : IEnumerable<T>
+            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : class, IEnumerable<T>
         {
             var multiDict = MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(strategy);
             Assert.IsNotNull(multiDict);
@@ -105,7 +105,7 @@ namespace MultiKeyMapTests
         }
 
         private IMultiKeyMap<T, K, V> AddHelper<T, K, V>(T t, K k, V v,
-            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : IEnumerable<T>
+            MultiKeyMaps.MultiKeyCreationStrategy strategy) where K : class, IEnumerable<T>
         {
             KeyValuePair<K, V> expectedEntry = new KeyValuePair<K, V>(k, v);
 
@@ -175,7 +175,7 @@ namespace MultiKeyMapTests
 
         private void DictionaryBasedAddHelper<T, K, V>(
             MultiKeyMaps.MultiKeyCreationStrategy strategy, K[] ks, V[] vs,
-            IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null) where K : IEnumerable<T>
+            IEqualityComparer<T> subKeyComparer = null, IEqualityComparer<K> fullKeyComparer = null) where K : class, IEnumerable<T>
         {
             subKeyComparer = subKeyComparer ?? EqualityComparer<T>.Default;
             fullKeyComparer = fullKeyComparer ?? EqualityComparer<K>.Default;
@@ -184,7 +184,7 @@ namespace MultiKeyMapTests
 
 
         private void AddHelper<T, K, V>(Func<IMultiKeyMap<T, K, V>> supplier, K[] ks, V[] vs,
-        IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer) where K : IEnumerable<T>
+        IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer) where K : class, IEnumerable<T>
         {
             //assuming
             supplier.Should().NotBeNull();

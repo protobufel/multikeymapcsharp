@@ -45,14 +45,14 @@ namespace MultiKeyMapTests
 
         #region Data Test Initialization
 
-        private MultiKeyMapBaseHelper<T, K, V> InitHelper<T, K, V>(K k1, K k2, V v1 = default(V), V v2 = default(V)) where K : IEnumerable<T>
+        private MultiKeyMapBaseHelper<T, K, V> InitHelper<T, K, V>(K k1, K k2, V v1 = default(V), V v2 = default(V)) where K : class, IEnumerable<T>
         {
             return new MultiKeyMapBaseHelper<T, K, V>(() => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(), k1, k2, v1, v2);
         }
 
         public Func<IMultiKeyMap<T,K,V>> Supplier<T, K, V>(
             MultiKeyMaps.MultiKeyCreationStrategy strategy = OptimizedForNonPositionalSearch,
-            ComparersStrategy compStrategy = BothNull) where K : IEnumerable<T>
+            ComparersStrategy compStrategy = BothNull) where K : class, IEnumerable<T>
         {
             switch (compStrategy)
             {
@@ -71,7 +71,7 @@ namespace MultiKeyMapTests
         }
 
         [Serializable]
-        public class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : IEnumerable<T>
+        public class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : class, IEnumerable<T>
         {
             private IEqualityComparer<T> elementComparer;
 

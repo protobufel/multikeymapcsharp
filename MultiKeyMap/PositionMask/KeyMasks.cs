@@ -7,7 +7,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 {
     // Consider IEquatable<K> and  IEquatable<T>, and use them as key types, then both the plain type and its mask wrapper would be acceptable by IDictionary!
     // It is a space saver, but more trouble in code.
-    internal interface IKeyMask<T, K> : IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : IEnumerable<T>
+    internal interface IKeyMask<T, K> : IEquatable<IKeyMask<T, K>>, IEquatable<K>, IEnumerable<ISubKeyMask<T>> where K : class, IEnumerable<T>
     {
         K Key { get; }
     }
@@ -18,7 +18,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
         int Position { get; }
     }
 
-    internal class KeyMask<T, K> : IKeyMask<T, K> where K : IEnumerable<T>
+    internal class KeyMask<T, K> : IKeyMask<T, K> where K : class, IEnumerable<T>
     {
         public KeyMask(K key)
         {
@@ -127,7 +127,7 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
 
     internal static class KeyMaskExtensions
     {
-        public static IKeyMask<T, K> ToKeyMask<T, K>(this K key) where K : IEnumerable<T>
+        public static IKeyMask<T, K> ToKeyMask<T, K>(this K key) where K : class, IEnumerable<T>
         {
             return new KeyMask<T, K>(key);
         }
@@ -142,13 +142,13 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
             return new SubKeyMask<T>(subKey, position);
         }
 
-        public static KeyValuePair<K, V> ToKeyValuePair<T, K, V>(this KeyValuePair<IKeyMask<T, K>, V> entry) where K : IEnumerable<T>
+        public static KeyValuePair<K, V> ToKeyValuePair<T, K, V>(this KeyValuePair<IKeyMask<T, K>, V> entry) where K : class, IEnumerable<T>
         {
             if (entry.Key == null) throw new ArgumentNullException("entry.Key");
             return new KeyValuePair<K, V>(entry.Key.Key, entry.Value);
         }
 
-        public static KeyValuePair<IKeyMask<T, K>, V> ToKeyValuePair<T, K, V>(this KeyValuePair<K, V> entry) where K : IEnumerable<T>
+        public static KeyValuePair<IKeyMask<T, K>, V> ToKeyValuePair<T, K, V>(this KeyValuePair<K, V> entry) where K : class, IEnumerable<T>
         {
             if (entry.Key == null) throw new ArgumentNullException("entry.Key");
             return new KeyValuePair<IKeyMask<T, K>, V>(entry.Key.ToKeyMask<T, K>(), entry.Value);
@@ -199,12 +199,12 @@ namespace GitHub.Protobufel.MultiKeyMap.PositionMask
             return BitConverter.ToInt32(BitConverter.GetBytes((number << positions) | wrapped), 0);
         }
 
-        public static IEqualityComparer<IKeyMask<T, K>> ToKeyMaskComparer<T, K>(this IEqualityComparer<K> keyComparer) where K : IEnumerable<T>
+        public static IEqualityComparer<IKeyMask<T, K>> ToKeyMaskComparer<T, K>(this IEqualityComparer<K> keyComparer) where K : class, IEnumerable<T>
         {
             return new KeyMaskComparer<T, K>(keyComparer);
         }
 
-        public class KeyMaskComparer<T, K> : EqualityComparer<IKeyMask<T, K>> where K : IEnumerable<T>
+        public class KeyMaskComparer<T, K> : EqualityComparer<IKeyMask<T, K>> where K : class, IEnumerable<T>
         {
             public KeyMaskComparer(IEqualityComparer<K> keyComparer)
             {

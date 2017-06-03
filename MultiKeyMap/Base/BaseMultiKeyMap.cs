@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
-    internal abstract class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class BaseMultiKeyMap<T, K, V> : IMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         protected const float CostRatioOfNewJoinOp = 2.0F;
 

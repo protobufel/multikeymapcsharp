@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace GitHub.Protobufel.MultiKeyMap.Base
 {
     [Serializable]
-    internal abstract class NonPositionalBaseMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : IEnumerable<T>
+    internal abstract class NonPositionalBaseMultiKeyMap<T, K, V> : BaseMultiKeyMap<T, K, V>, IMultiKeyMap<T, K, V> where K : class, IEnumerable<T>
     {
         [NonSerialized]
         protected ILiteSetMultimap<T, K> partMap;
@@ -19,9 +19,10 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
 
         protected virtual ILiteSetMultimap<TSubKey, TKey> CreateLiteSetMultimap<TSubKey, TKey>(
             IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
-            where TKey : IEnumerable<TSubKey>
+            where TKey : class, IEnumerable<TSubKey>
         {
-            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
+            //return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
+            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(EqualityComparerExtensions.ReferenceEqualityComparerOf<TKey>());
         }
 
         #region non-positional TryGetsByPartialKey
@@ -62,7 +63,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 return false;
             }
 
-            ISet<K> result = new HashSet<K>(subResults[minPos], FullKeyComparer);
+            ISet<K> result = new HashSet<K>(subResults[minPos], EqualityComparerExtensions.ReferenceEqualityComparerOf<K>());
 
             if (subResults.Count == 1)
             {
@@ -136,7 +137,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
 
             if (GetAtOrNegative(positionList, minPos) < 0)
             {
-                result = new HashSet<K>(subResults[minPos], FullKeyComparer);
+                result = new HashSet<K>(subResults[minPos], EqualityComparerExtensions.ReferenceEqualityComparerOf<K>());
 
             }
             else if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, minPos), subKeyList[minPos], subResults[minPos], out result))
@@ -189,7 +190,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 return true;
             }
 
-            target = new HashSet<K>(FullKeyComparer);
+            target = new HashSet<K>(EqualityComparerExtensions.ReferenceEqualityComparerOf<K>());
 
             foreach (K fullKey in source)
             {

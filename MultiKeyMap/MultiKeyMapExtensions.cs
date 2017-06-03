@@ -20,7 +20,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <param name="other">the source of the data to copy from</param>
         /// <returns></returns>
-        public static IMultiKeyMap<T, K, V> CopyFrom<T, K, V>(this IMultiKeyMap<T, K, V> me, IMultiKeyMap<T, K, V> other) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> CopyFrom<T, K, V>(this IMultiKeyMap<T, K, V> me, IMultiKeyMap<T, K, V> other) where K : class, IEnumerable<T>
         {
             other = other ?? throw new ArgumentNullException();
 
@@ -42,7 +42,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <param name="other">the source of the data to copy from</param>
         /// <returns></returns>
-        public static IMultiKeyMap<T, K, V> Of<T, K, V>(this IMultiKeyMap<T, K, V> me, IMultiKeyMap<T, K, V> other) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> Of<T, K, V>(this IMultiKeyMap<T, K, V> me, IMultiKeyMap<T, K, V> other) where K : class, IEnumerable<T>
         {
             other = other ?? throw new ArgumentNullException();
             me.Clear();
@@ -65,7 +65,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <param name="other">the source of the data to copy from</param>
         /// <returns></returns>
-        public static IMultiKeyMap<T, K, V> CopyFrom<T, K, V>(this IMultiKeyMap<T, K, V> me, IDictionary<K, V> other) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> CopyFrom<T, K, V>(this IMultiKeyMap<T, K, V> me, IDictionary<K, V> other) where K : class, IEnumerable<T>
         {
             other = other ?? throw new ArgumentNullException();
 
@@ -87,7 +87,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <param name="other">the source of the data to copy from</param>
         /// <returns></returns>
-        public static IMultiKeyMap<T, K, V> Of<T, K, V>(this IMultiKeyMap<T, K, V> me, IDictionary<K, V> other) where K : IEnumerable<T>
+        public static IMultiKeyMap<T, K, V> Of<T, K, V>(this IMultiKeyMap<T, K, V> me, IDictionary<K, V> other) where K : class, IEnumerable<T>
         {
             other = other ?? throw new ArgumentNullException();
             me.Clear();
@@ -117,7 +117,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetValuesByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out IEnumerable<V> values) where K : IEnumerable<T>
+            out IEnumerable<V> values) where K : class, IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
             return me.TryGetValuesByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out values);
@@ -134,7 +134,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetEntriesByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out IEnumerable<KeyValuePair<K, V>> entries) where K : IEnumerable<T>
+            out IEnumerable<KeyValuePair<K, V>> entries) where K : class, IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
             return me.TryGetEntriesByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out entries);
@@ -151,7 +151,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="me">this object</param>
         /// <returns>true if the partial key is found, false otherwise.</returns>
         public static bool TryGetFullKeysByPartialKey<T, K, V>(this IMultiKeyMap<T, K, V> me, IEnumerable<(int position, T subkey)> partialKey,
-            out IEnumerable<K> fullKeys) where K : IEnumerable<T>
+            out IEnumerable<K> fullKeys) where K : class, IEnumerable<T>
         {
             if (partialKey == null) throw new ArgumentNullException("partialKey");
             return me.TryGetFullKeysByPartialKey(partialKey.Select(t => t.subkey), partialKey.Select(t => t.position), out fullKeys);
@@ -170,7 +170,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <typeparam name="K">The type of the sequence to generate the equality comparer for.</typeparam>
         /// <param name="elementComparer">The equality comparer of the target sequence's elements.</param>
         /// <returns>The equality comparer of the desired sequence of elements</returns>
-        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : IEnumerable<T>
+        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>(this IEqualityComparer<T> elementComparer) where K : class, IEnumerable<T>
         {
             return new EnumerableEqualityComparer<T, K>(elementComparer);
         }
@@ -181,7 +181,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <typeparam name="T">The type of the element.</typeparam>
         /// <typeparam name="K">The type of the sequence to generate the equality comparer for.</typeparam>
         /// <returns>The equality comparer of the desired sequence of elements</returns>
-        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>() where K : IEnumerable<T>
+        public static IEqualityComparer<K> EnumerableEqualityComparerOf<T, K>() where K : class, IEnumerable<T>
         {
             return new EnumerableEqualityComparer<T, K>();
         }
@@ -195,12 +195,12 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <returns>The reference equality comparer of the desired type</returns>
         public static IEqualityComparer<T> ReferenceEqualityComparerOf<T>() where T : class
         {
-            return ReferenceEqualityComparer<T>.Default;
+            return (typeof(T) == typeof(string)) ? StringComparer.Ordinal as IEqualityComparer<T> : ReferenceEqualityComparer<T>.Default;
         }
     }
 
     [Serializable]
-    internal class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : IEnumerable<T>
+    internal class EnumerableEqualityComparer<T, K> : EqualityComparer<K> where K : class, IEnumerable<T>
     {
         private IEqualityComparer<T> elementComparer;
 
@@ -242,11 +242,22 @@ namespace GitHub.Protobufel.MultiKeyMap
 
     internal sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
     {
-        internal readonly static ReferenceEqualityComparer<T> Default;
+        internal static volatile ReferenceEqualityComparer<T> instance;
 
-        static ReferenceEqualityComparer()
+        internal static ReferenceEqualityComparer<T> Default
         {
-            Default = new ReferenceEqualityComparer<T>();
+            get
+            {
+                ReferenceEqualityComparer<T> comparer = instance;
+
+                if (comparer == null)
+                {
+                    comparer = new ReferenceEqualityComparer<T>();
+                    instance = comparer;
+                }
+
+                return comparer;
+            }
         }
 
         private ReferenceEqualityComparer()
@@ -255,7 +266,7 @@ namespace GitHub.Protobufel.MultiKeyMap
 
         public bool Equals(T x, T y)
         {
-            return ReferenceEquals(x, y) || (x is string) ? StringComparer.Ordinal.Equals(x as string, y as string) : false;
+            return ReferenceEquals(x, y);
         }
 
         public int GetHashCode(T obj)

@@ -21,7 +21,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <see cref="MultiKeyCreationStrategy.OptimizedForNonPositionalSearch"/></param>
         /// <returns>The serializable instance of the Dictionary-based IMultiKeyMap implementation.</returns>
         public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(
-            MultiKeyCreationStrategy creationStrategy = MultiKeyCreationStrategy.OptimizedForNonPositionalSearch) where K : IEnumerable<T>
+            MultiKeyCreationStrategy creationStrategy = MultiKeyCreationStrategy.OptimizedForNonPositionalSearch) where K : class, IEnumerable<T>
         {
             return CreateMultiKeyDictionary<T, K, V>(EqualityComparer<T>.Default,
                         EqualityComparer<T>.Default.EnumerableEqualityComparerOf<T, K>(), creationStrategy);
@@ -39,7 +39,7 @@ namespace GitHub.Protobufel.MultiKeyMap
         /// <param name="creationStrategy"></param>
         /// <returns>The serializable instance of the Dictionary-based IMultiKeyMap implementation.</returns>
         public static IMultiKeyMap<T, K, V> CreateMultiKeyDictionary<T, K, V>(IEqualityComparer<T> subKeyComparer, IEqualityComparer<K> fullKeyComparer,
-            MultiKeyCreationStrategy creationStrategy = MultiKeyCreationStrategy.OptimizedForNonPositionalSearch) where K : IEnumerable<T>
+            MultiKeyCreationStrategy creationStrategy = MultiKeyCreationStrategy.OptimizedForNonPositionalSearch) where K : class, IEnumerable<T>
         {
             if (subKeyComparer == null) throw new ArgumentNullException("subKeyComparer");
             if (fullKeyComparer == null) throw new ArgumentNullException("fullKeyComparer");
