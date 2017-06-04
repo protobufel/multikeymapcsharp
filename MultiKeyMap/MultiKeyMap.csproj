@@ -13,13 +13,12 @@
     <RepositoryUrl>https://github.com/protobufel/multikeymapcsharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>c# library multikey dictionary</PackageTags>
-    <PackageReleaseNotes>1. Improved search by switching to the full key ref equality for the internal support storage; publicly still changeable
-2. Fixed some benchmarks</PackageReleaseNotes>
+    <PackageReleaseNotes>Added license to all files; same Apache 2.0 license!</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <SignAssembly>False</SignAssembly>
-    <AssemblyVersion>4.2.20.0</AssemblyVersion>
-    <FileVersion>4.2.20.0</FileVersion>
+    <AssemblyVersion>4.2.21.0</AssemblyVersion>
+    <FileVersion>4.2.21.0</FileVersion>
     <Version>4.2.20</Version>
   </PropertyGroup>
 
