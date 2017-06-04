@@ -1,6 +1,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/b98onv6m5cb39mly?svg=true)](https://ci.appveyor.com/project/protobufel/multikeymapcsharp)
 [![NuGet](https://img.shields.io/nuget/v/multikeymap.svg?style=plastic)](https://www.nuget.org/packages/multikeymap/)
-[![license](https://img.shields.io/github/license/multikeymapcsharp/apistatus.svg?style=plastic)](https://github.com/protobufel/multikeymapcsharp)
+[![license](https://img.shields.io/github/license/protobufel/multikeymapcsharp/apistatus.svg?style=plastic)](https://github.com/protobufel/multikeymapcsharp)
 
 <!--- ([![NuGet Pre Release](https://img.shields.io/nuget/vpre/multikeymap.svg?style=plastic)](https://www.nuget.org/packages/multikeymap/)) --->
 
