@@ -149,7 +149,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
                 return false;
             }
 
-            ISet<K> result;
+            HashSet<K> result;
 
             if (GetAtOrNegative(positionList, minPos) < 0)
             {
@@ -172,19 +172,41 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             {
                 if (i != minPos)
                 {
-                    if (!TryGetFilteredFullKeys(GetAtOrNegative(positionList, i), subKeyList[i], subResults[i], out ISet<K> filteredSubResult))
-                    {
-                        fullKeys = default(IEnumerable<K>);
-                        return false;
-                    }
-
-                    result.IntersectWith(filteredSubResult);
+                    result.IntersectWith(subResults[i]);
 
                     if (result.Count == 0)
                     {
-                        fullKeys = default(IEnumerable<K>);
+                        fullKeys = default(ISet<K>);
                         return false;
                     }
+                }
+            }
+
+            var subKeyPosList = subKeyList
+                .Zip<T, int, (T subKey, int position)>(positionList, (subKey, position) => (subKey, position))
+                .Where((tuple, index) => (index != minPos) && (tuple.position > 0))
+                .ToList();
+
+            if (subKeyPosList.Count != 0)
+            {
+                // could be streamed via IEnumerable result.Where(<the predicate opposite the one below>) but then subKeyList and positionList should always be copied
+                result.RemoveWhere(key =>
+                {
+                    foreach (var subKeyPos in subKeyPosList)
+                    {
+                        if (!SubKeyComparer.Equals(subKeyPos.subKey, key.ElementAtOrDefault(subKeyPos.position)))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+
+                if (result.Count == 0)
+                {
+                    fullKeys = default(IEnumerable<K>);
+                    return false;
                 }
             }
 
@@ -192,25 +214,19 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             return true;
         }
 
-        protected virtual bool TryGetFilteredFullKeys(int position, T subkey, ISet<K> source, out ISet<K> target)
+        protected virtual bool TryGetFilteredFullKeys(int position, T subKey, ISet<K> source, out HashSet<K> target)
         {
             if (source.Count == 0)
             {
-                target = default(ISet<K>);
+                target = default(HashSet<K>);
                 return false;
-            }
-
-            if (position < 0)
-            {
-                target = source;
-                return true;
             }
 
             target = new HashSet<K>(EqualityComparerExtensions.ReferenceEqualityComparerOf<K>());
 
             foreach (K fullKey in source)
             {
-                if (SubKeyComparer.Equals(subkey, fullKey.ElementAtOrDefault(position)))
+                if (SubKeyComparer.Equals(subKey, fullKey.ElementAtOrDefault(position)))
                 {
                     target.Add(fullKey);
                 }
@@ -218,7 +234,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
 
             if (target.Count == 0)
             {
-                target = default(ISet<K>);
+                target = default(HashSet<K>);
                 return false;
             }
 
@@ -248,7 +264,7 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
 
         protected override void ClearPartial()
         {
-                partMap.Clear();
+            partMap.Clear();
         }
 
         #endregion
