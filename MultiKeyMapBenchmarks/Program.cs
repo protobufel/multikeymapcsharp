@@ -119,7 +119,7 @@ namespace MultiKeyMapBenchmarks
         [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
         public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = 100;
@@ -174,7 +174,7 @@ namespace MultiKeyMapBenchmarks
         [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
         public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = 100;
@@ -252,7 +252,7 @@ namespace MultiKeyMapBenchmarks
         [Params(OptimizedForNonPositionalSearch, OptimizedForPositionalSearch)]
         public MultiKeyMaps.MultiKeyCreationStrategy Strategy { get; set; }
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = 100;
@@ -368,7 +368,7 @@ namespace MultiKeyMapBenchmarks
             ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<string>>()
             : EqualityComparer<string>.Default.EnumerableEqualityComparerOf<string, IEnumerable<string>>();
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = SearchCount;
@@ -475,7 +475,7 @@ namespace MultiKeyMapBenchmarks
             ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<Employee<int>>>()
             : EqualityComparer<Employee<int>>.Default.EnumerableEqualityComparerOf<Employee<int>, IEnumerable<Employee<int>>>();
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = SearchCount;
@@ -581,7 +581,7 @@ namespace MultiKeyMapBenchmarks
             ? EqualityComparerExtensions.ReferenceEqualityComparerOf<IEnumerable<Employee<int>>>()
             : EqualityComparer<Employee<int>>.Default.EnumerableEqualityComparerOf<Employee<int>, IEnumerable<Employee<int>>>();
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             int count = SearchCount;
