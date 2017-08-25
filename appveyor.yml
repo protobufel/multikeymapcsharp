@@ -1,11 +1,20 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 before_build:
-- ps: nuget restore
+- ps: dotnet restore
 build:
   publish_nuget: true
   publish_nuget_symbols: true
   include_nuget_references: true
   verbosity: normal
 before_test:
-- ps: nuget restore
+- ps: dotnet restore
+after_test:
+- cmd: >-
+    .\packages\OpenCover.4.6.519\OpenCover.Console.exe -register:user -target:"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\MSTest.exe" -targetargs:"/noresults /noisolation /testcontainer:"".\MultiKeyMapTests\bin\Debug\MultiKeyMapTests.dll" -filter:"+[multikeymapcsharp]*  -[multikeymapcsharp]multikeymapcsharp.Properties.*" -excludebyattribute:*.ExcludeFromCodeCoverage* -hideskipped:All -output:.\multikeymapcsharp_coverage.xml
+
+    SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%
+
+    pip install codecov
+
+    codecov -f "multikeymapcsharp_coverage.xml"
