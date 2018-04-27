@@ -37,8 +37,8 @@ namespace GitHub.Protobufel.MultiKeyMap.Base
             IEqualityComparer<TSubKey> subKeyComparer, IEqualityComparer<TKey> fullKeyComparer)
             where TKey : class, IEnumerable<TSubKey>
         {
-            //return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
-            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(EqualityComparerExtensions.ReferenceEqualityComparerOf<TKey>());
+            return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(fullKeyComparer);
+            //return CreateSupportDictionary<TSubKey, ISet<TKey>>(subKeyComparer).ToSetMultimap(EqualityComparerExtensions.ReferenceEqualityComparerOf<TKey>());
         }
 
         #region non-positional TryGetsByPartialKey
