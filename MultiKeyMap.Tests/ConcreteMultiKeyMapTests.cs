@@ -497,7 +497,7 @@ namespace MultiKeyMapTests
 
             Assert.IsTrue(removedAny);
 
-            var tryGetValuesByPartialKey = dict.TryGetValuesByPartialKey(new[] { "first" }, out values); // Fails here even though the dictionary still contains two values that should match this partial key
+            var tryGetValuesByPartialKey = dict.TryGetValuesByPartialKey(new[] { "first" }, out values); // Was failing here even though the dictionary still contains two values that should match this partial key
             Assert.IsTrue(tryGetValuesByPartialKey);
             Assert.AreEqual(2, values.Count());
         }
