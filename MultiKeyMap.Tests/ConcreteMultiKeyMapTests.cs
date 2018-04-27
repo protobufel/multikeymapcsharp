@@ -66,7 +66,7 @@ namespace MultiKeyMapTests
             return new MultiKeyMapBaseHelper<T, K, V>(() => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(), k1, k2, v1, v2);
         }
 
-        public Func<IMultiKeyMap<T,K,V>> Supplier<T, K, V>(
+        public Func<IMultiKeyMap<T, K, V>> Supplier<T, K, V>(
             MultiKeyMaps.MultiKeyCreationStrategy strategy = OptimizedForNonPositionalSearch,
             ComparersStrategy compStrategy = BothNull) where K : class, IEnumerable<T>
         {
@@ -76,7 +76,7 @@ namespace MultiKeyMapTests
                 case BothDefault:
                     return () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(strategy);
                 case StructuralFullKeyOnly:
-                    return () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(EqualityComparer<T>.Default, 
+                    return () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(EqualityComparer<T>.Default,
                         new EnumerableEqualityComparer<T, K>(EqualityComparer<T>.Default), strategy);
                 case StructuralBoth:
                     return () => MultiKeyMaps.CreateMultiKeyDictionary<T, K, V>(EqualityComparer<T>.Default,
@@ -113,7 +113,7 @@ namespace MultiKeyMapTests
 
         public void InitAll(MultiKeyMaps.MultiKeyCreationStrategy strategy, ComparersStrategy compStrategy)
         {
-            helper1.Init(Supplier<int,int[],object>(strategy, compStrategy));
+            helper1.Init(Supplier<int, int[], object>(strategy, compStrategy));
             helper2.Init(Supplier<string, string[], long>(strategy, compStrategy));
             helper3.Init(Supplier<Class1<string>, List<Class1<string>>, string>(strategy, compStrategy));
             helper4.Init(Supplier<ValueTuple<double>, List<ValueTuple<double>>, bool>(strategy, compStrategy));
@@ -474,6 +474,32 @@ namespace MultiKeyMapTests
             var myObj2 = DeserializeHelper<IMultiKeyMap<int, int[], string>>(serialized);
             myObj2.ShouldAllBeEquivalentTo(myObj1);
 
+        }
+
+        [TestMethod]
+        public void RemoveByFullKeyTests()
+        {
+            IMultiKeyMap<string, IEnumerable<string>, string> dict = MultiKeyMaps.CreateMultiKeyDictionary<string, IEnumerable<string>, string>();
+            dict.Add(new[] { "first", "crazy", "1st" }, "one");
+            dict.Add(new[] { "first", "other" }, "one again");
+            dict.Add(new[] { "first", "something else" }, "one a third time");
+
+            IEnumerable<string> values;
+            Assert.IsTrue(dict.TryGetValuesByPartialKey(new[] { "first" }, out values));
+            Assert.AreEqual(3, values.Count());
+
+            IEnumerable<IEnumerable<string>> fullKeys = new[] { new[] { "first", "crazy", "1st" } };
+            bool removedAny = false;
+            foreach (var fullKey in fullKeys)
+            {
+                removedAny |= dict.Remove(fullKey);
+            }
+
+            Assert.IsTrue(removedAny);
+
+            var tryGetValuesByPartialKey = dict.TryGetValuesByPartialKey(new[] { "first" }, out values); // Fails here even though the dictionary still contains two values that should match this partial key
+            Assert.IsTrue(tryGetValuesByPartialKey);
+            Assert.AreEqual(2, values.Count());
         }
     }
 }
